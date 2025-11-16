@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from ui.fiches_view import FichesView
 
 class MainWindow(tk.Tk):
     def __init__(self):
@@ -7,65 +8,83 @@ class MainWindow(tk.Tk):
 
         # --- Configuration de base ---
         self.title("Jean-Révise Mémorator 🌱")
-        self.geometry("700x500")
-        self.minsize(600, 400)
-        self.configure(bg="#f8f9fa")  # fond clair et doux
+        self.geometry("850x600")
+        self.minsize(700, 500)
+        self.configure(bg="#f8f9fa")
 
-        # --- Style général ---
         style = ttk.Style(self)
         style.theme_use("clam")
         style.configure("TButton", font=("Segoe UI", 11), padding=10)
         style.configure("TLabel", background="#f8f9fa", font=("Segoe UI", 12))
 
-        # --- Titre principal ---
+        # --- En-tête (titre général) ---
         self.title_label = ttk.Label(
             self,
-            text="Bienvenue dans ton jardin de connaissances 🌿",
-            font=("Segoe UI", 16, "bold"),
+            text="Jean-Révise Mémorator 🌱",
+            font=("Segoe UI", 20, "bold"),
+            background="#f8f9fa",
             foreground="#2f4f4f",
         )
-        self.title_label.pack(pady=(40, 10))
+        self.title_label.pack(pady=(28, 6))
 
-        # --- Sous-titre ---
-        self.subtitle_label = ttk.Label(
-            self,
-            text="Choisis une activité pour entretenir ta mémoire :",
-            font=("Segoe UI", 12),
-            foreground="#3c3c3c",
-        )
-        self.subtitle_label.pack(pady=(0, 30))
-
-        # --- Conteneur central ---
+        # --- Menu boutons horizontal ---
         self.menu_frame = ttk.Frame(self)
-        self.menu_frame.pack(pady=10)
+        self.menu_frame.pack(pady=(0,6))
 
-        # --- Boutons du menu principal ---
-        self._add_menu_button("📘 Gérer mes fiches", self.open_fiches)
-        self._add_menu_button("🧠 Commencer une révision", self.open_revision)
-        self._add_menu_button("📊 Tableau de bord", self.open_dashboard)
+        self._add_menu_button("📘 Gérer mes fiches", self.show_fiches)
+        self._add_menu_button("🧠 Commencer une révision", self.show_revision)
+        self._add_menu_button("📊 Tableau de bord", self.show_dashboard)
+        self._add_menu_button("🏠 Accueil", self.show_home)
         self._add_menu_button("🚪 Quitter", self.quit_app)
 
-        # --- Citation inspirante ---
+        # --- Zone centrale où s'affichent les vues dynamiques ---
+        self.central_frame = ttk.Frame(self, style="Central.TFrame")
+        self.central_frame.pack(padx=16, pady=(12,10), fill=tk.BOTH, expand=True)
+
+        # --- Citation inspirante en bas ---
         self.quote_label = ttk.Label(
             self,
             text='"Chaque jour est une nouvelle graine de savoir à planter." 🌼',
             font=("Segoe UI", 10, "italic"),
             foreground="#555",
+            background="#f8f9fa",
         )
-        self.quote_label.pack(side="bottom", pady=20)
+        self.quote_label.pack(side="bottom", pady=14)
+
+        self.show_home()  # Affiche la page d'accueil par défaut
 
     def _add_menu_button(self, text, command):
         btn = ttk.Button(self.menu_frame, text=text, command=command)
-        btn.pack(pady=8, ipadx=10, ipady=5, fill="x", expand=True)
+        btn.pack(side="left", padx=6, ipadx=8, ipady=3)
 
-    def open_fiches(self):
-        messagebox.showinfo("Fiches", "Ouverture de la gestion des fiches 📘 (à implémenter)")
+    def clear_central_frame(self):
+        for widget in self.central_frame.winfo_children():
+            widget.destroy()
 
-    def open_revision(self):
-        messagebox.showinfo("Révision", "Démarrage de la révision 🧠 (à implémenter)")
+    def show_home(self):
+        self.clear_central_frame()
+        lbl = ttk.Label(
+            self.central_frame,
+            text="Bienvenue dans ton jardin de connaissances 🌿\n\nChoisis une activité pour entretenir ta mémoire !",
+            font=("Segoe UI", 18, "bold"),
+            background="#f8f9fa",
+            foreground="#2f4f4f"
+        )
+        lbl.pack(expand=True, pady=45)
 
-    def open_dashboard(self):
-        messagebox.showinfo("Tableau de bord", "Affichage des statistiques 📊 (à implémenter)")
+    def show_fiches(self):
+        self.clear_central_frame()
+        FichesView(self.central_frame).pack(fill=tk.BOTH, expand=True, padx=6, pady=6)
+
+    def show_revision(self):
+        self.clear_central_frame()
+        lbl = ttk.Label(self.central_frame, text="Module de révision prochainement disponible.", font=("Segoe UI", 15), background="#f8f9fa")
+        lbl.pack(expand=True)
+
+    def show_dashboard(self):
+        self.clear_central_frame()
+        lbl = ttk.Label(self.central_frame, text="Tableau de bord/statistiques prochainement disponible.", font=("Segoe UI", 15), background="#f8f9fa")
+        lbl.pack(expand=True)
 
     def quit_app(self):
         if messagebox.askokcancel("Quitter", "Souhaites-tu vraiment quitter l’application ?"):
