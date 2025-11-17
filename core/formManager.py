@@ -1,7 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
-from models import forms
-from time import timedelta
+from core.models import forms
 
 
 class FormsManager:
@@ -53,6 +52,44 @@ class FormsManager:
                 return fiche
         return None
 
+    def add_theme_to_form(self, fiche_id: int, theme: str) -> bool:
+        """
+        Ajoute un thème (tag) à une fiche donnée.
+        Retourne True si ajouté, False si fiche introuvable ou thème déjà présent.
+        """
+        fiche = self.get_form(fiche_id)
+        if fiche is None:
+            return False  # fiche inexistante
+
+        # Normalisation : on évite les doublons avec majuscules/minuscules
+        theme = theme.strip().lower()
+
+        # Eviter doublons
+        if theme in (t.lower() for t in fiche.tags):
+            return False
+
+        fiche.tags.append(theme)
+        return True
+    
+    def remove_theme_from_form(self, fiche_id: int, theme: str) -> bool:
+        """
+        Supprime un thème (tag) d'une fiche.
+        Retourne True si supprimé, False si fiche introuvable ou thème absent.
+        """
+        fiche = self.get_form(fiche_id)
+        if fiche is None:
+            return False
+
+        theme = theme.strip().lower()
+
+        # Normalisation pour correspondance
+        for t in fiche.tags:
+            if t.lower() == theme:
+                fiche.tags.remove(t)
+                return True
+
+        return False
+
     # ----------------------------------------------------------
     # Recherche et filtrage
     # ----------------------------------------------------------
@@ -69,15 +106,15 @@ class FormsManager:
         """Retourne les fiches qui contiennent un tag donné."""
         return [fiche for fiche in self.fiches if tag in fiche.tags]
 
+    """
     # ----------------------------------------------------------
     # Révision : fiches à revoir selon la date
     # ----------------------------------------------------------
-
     def fiches_a_reviser(self) -> List[forms]:
-        """
-        Retourne les fiches qui doivent être révisées
-        (dernière révision + intervalle <= maintenant).
-        """
+        
+        #Retourne les fiches qui doivent être révisées
+        #(dernière révision + intervalle <= maintenant).
+        
         maintenant = datetime.now()
         a_reviser = []
         for fiche in self.fiches:
@@ -88,7 +125,7 @@ class FormsManager:
                 a_reviser.append(fiche)
 
         return a_reviser
-
+    """
     # ----------------------------------------------------------
     # Import / Export interne (pour StorageManager)
     # ----------------------------------------------------------
