@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-
 from ui.fiches_view import FichesView
+from ui.revision_view import RevisionView
 
 
 class MainWindow(tk.Tk):
@@ -44,6 +44,10 @@ class MainWindow(tk.Tk):
         # Page fiches
         self.pages["Fiches"] = FichesView(self.page_container, self)
         self.pages["Fiches"].grid(row=0, column=0, sticky="nsew")
+
+        #Page de revision
+        self.pages["Revision"] = RevisionView(self.page_container, self)
+        self.pages["Revision"].grid(row=0, column=0, sticky="nsew")
 
     # ---------------------------------------------------------
     # Affichage d'une page
@@ -89,7 +93,7 @@ class MainMenuPage(ttk.Frame):
         self.add_btn(menu_frame, "📘 Gérer mes fiches",
                      lambda: controller.show_page("Fiches"))
         self.add_btn(menu_frame, "🧠 Commencer une révision",
-                     lambda: messagebox.showinfo("Révision", "À implémenter"))
+                     lambda: controller.show_page("Revision"))
         self.add_btn(menu_frame, "📊 Tableau de bord",
                      lambda: messagebox.showinfo("Dashboard", "À implémenter"))
         self.add_btn(menu_frame, "🚪 Quitter", controller.quit)
