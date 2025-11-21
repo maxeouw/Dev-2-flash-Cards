@@ -1,81 +1,55 @@
 import tkinter as tk
-from tkinter import ttk, simpledialog, messagebox
+from tkinter import ttk, messagebox
 
-
-class FichesView(ttk.Frame):
-    def __init__(self, parent, controller):
+class AddFormPage(ttk.Frame):
+    def __init__(self, parent, controller, forms_manager):
         super().__init__(parent)
+
         self.controller = controller
-        self.configure(style="TFrame")
+        self.forms_manager = forms_manager
 
-        # --- TITRE ---
-        lbl = ttk.Label(
-            self,
-            text="Mes listes de fiches",
-            font=("Segoe UI", 14, "bold"),
-            background="#f8f9fa"
+        ttk.Label(self, text="Créer une nouvelle fiche", font=("Segoe UI", 16, "bold")).pack(
+            pady=20
         )
-        lbl.pack(pady=18)
 
-        # --- CONTENEUR DES LISTES ---
-        self.lists_frame = ttk.Frame(self)
-        self.lists_frame.pack(padx=24, pady=7, fill=tk.BOTH, expand=True)
+        # --- Champ Question ---
+        ttk.Label(self, text="Question :").pack(anchor="w", padx=20)
+        self.question_entry = ttk.Entry(self, width=60)
+        self.question_entry.pack(padx=20, pady=5)
 
-        # --- BOUTON CREER UNE LISTE ---
-        creer_liste_btn = ttk.Button(self, text="Créer une nouvelle liste", command=self.creer_liste)
-        creer_liste_btn.pack(pady=8)
+        # --- Champ Réponse ---
+        ttk.Label(self, text="Réponse :").pack(anchor="w", padx=20)
+        self.reponse_text = tk.Text(self, width=60, height=8)
+        self.reponse_text.pack(padx=20, pady=5)
 
-        # --- BOUTON RETOUR ---
-        btn_retour = ttk.Button(
-            self,
-            text="⬅ Retour",
-            command=lambda: controller.show_page("MainMenu")
+        # --- Boutons ---
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(pady=20)
+
+        ttk.Button(btn_frame, text="Créer la fiche", command=self.creer_fiche).pack(
+            side="left", padx=10
         )
-        btn_retour.pack(pady=12)
 
-        # --- DONNÉES DE TEST ---
-        self.lists = ["Électricité", "Histoire", "Maths"]
-        
-        self.refresh_lists()
+        ttk.Button(btn_frame, text="Retour", command=lambda: controller.show_page("MainMenu")).pack(
+            side="left", padx=10
+        )
 
-    # -----------------------------------------------------------
-    # LOGIQUE DE GESTION DES LISTES
-    # -----------------------------------------------------------
-    def creer_liste(self):
-        nom = simpledialog.askstring("Nouvelle liste", "Nom de la nouvelle liste :", parent=self)
-        if nom and nom not in self.lists:
-            self.lists.append(nom)
-            self.refresh_lists()
+    # ----------------------------------------------------------
+    def creer_fiche(self):
+        question = self.question_entry.get().strip()
+        reponse = self.reponse_text.get("1.0", "end").strip()
+        tags_raw = self.tags_entry.get().strip()
 
-    def refresh_lists(self):
-        for widget in self.lists_frame.winfo_children():
-            widget.destroy()
+        if not question or not reponse:
+            messagebox.showerror("Erreur", "La question et la réponse sont obligatoires.")
+            return
 
-        for idx, nom in enumerate(self.lists):
-            row = ttk.Frame(self.lists_frame)
-            row.pack(side=tk.TOP, fill=tk.X, pady=2)
+        tags = [t.strip() for t in tags_raw.split(",") if t.strip()]
 
-            lbl = ttk.Label(row, text=nom, font=("Segoe UI", 12), width=62)
-            lbl.pack(side=tk.LEFT, padx=(5, 8))
+        self.forms_manager.create_form(question, reponse, tags)
 
-            # --- Bouton MODIFIER ---
-            btn_modif = ttk.Button(
-                row, text="Modifier", width=10,
-                command=lambda i=idx: self.modifier_liste(i)
-            )
-            btn_modif.pack(side=tk.LEFT, padx=3)
+        messagebox.showinfo("Succès", "La fiche a été créée !")
 
-            # --- Bouton SUPPRIMER ---
-            btn_suppr = ttk.Button(
-                row, text="Supprimer", width=10,
-                command=lambda i=idx: self.supprimer_liste(i)
-            )
-            btn_suppr.pack(side=tk.LEFT, padx=3)
-
-
-    def supprimer_liste(self, idx):
-        nom = self.lists[idx]
-        if messagebox.askokcancel("Suppression", f"Supprimer la liste '{nom}' ?"):
-            del self.lists[idx]
-            self.refresh_lists()
-
+        self.question_entry.delete(0, "end")
+        self.reponse_text.delete("1.0", "end")
+        self.tags_entry.delete(0, "end")

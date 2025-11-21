@@ -1,28 +1,36 @@
 from typing import List, Optional
 from datetime import datetime
-from core.models import forms
+from core.models import Form
 
+
+from typing import List, Optional
+from datetime import datetime, timedelta
 
 class FormsManager:
     """
-    Gère l’ensemble des fiches : création, modification, suppression,
+    Gère les fiches : création, modification, suppression,
     recherche et sélection pour la révision.
     """
 
     def __init__(self):
-        self.fiches: List[forms] = []
+        self.fiches: List[Form] = []
         self._next_id = 1
 
     # ----------------------------------------------------------
-    # CRUD : Create, Read, Update, Delete
+    # CRUD
     # ----------------------------------------------------------
 
-    def create_form(self, titre: str, contenu: str, tags: Optional[List[str]] = None) -> forms:
-        """Crée une nouvelle fiche et l’ajoute à la liste."""
-        fiche = forms(
+    def create_form(
+        self,
+        question: str,
+        reponse: str,
+        tags: Optional[List[str]] = None
+    ) -> Form:
+        """Créer une fiche Question/Réponse."""
+        fiche = Form(
             id=self._next_id,
-            titre=titre,
-            contenu=contenu,
+            question=question,
+            reponse=reponse,
             tags=tags if tags else [],
         )
         self.fiches.append(fiche)
@@ -30,119 +38,56 @@ class FormsManager:
         return fiche
 
     def delete_form(self, fiche_id: int) -> bool:
-        """Supprime une fiche par son ID."""
         for fiche in self.fiches:
             if fiche.id == fiche_id:
                 self.fiches.remove(fiche)
                 return True
         return False
 
-    def modify_form(self, fiche_modifiee: forms) -> bool:
-        """Met à jour une fiche existante."""
+    def modify_form(self, fiche_modifiee: Form) -> bool:
         for i, fiche in enumerate(self.fiches):
             if fiche.id == fiche_modifiee.id:
                 self.fiches[i] = fiche_modifiee
                 return True
         return False
 
-    def get_form(self, fiche_id: int) -> Optional[forms]:
-        """Retourne une fiche spécifique grâce à son ID."""
+    def get_form(self, fiche_id: int) -> Optional[Form]:
         for fiche in self.fiches:
             if fiche.id == fiche_id:
                 return fiche
         return None
 
-    def add_theme_to_form(self, fiche_id: int, theme: str) -> bool:
-        """
-        Ajoute un thème (tag) à une fiche donnée.
-        Retourne True si ajouté, False si fiche introuvable ou thème déjà présent.
-        """
-        fiche = self.get_form(fiche_id)
-        if fiche is None:
-            return False  # fiche inexistante
-
-        # Normalisation : on évite les doublons avec majuscules/minuscules
-        theme = theme.strip().lower()
-
-        # Eviter doublons
-        if theme in (t.lower() for t in fiche.tags):
-            return False
-
-        fiche.tags.append(theme)
-        return True
-    
-    def remove_theme_from_form(self, fiche_id: int, theme: str) -> bool:
-        """
-        Supprime un thème (tag) d'une fiche.
-        Retourne True si supprimé, False si fiche introuvable ou thème absent.
-        """
-        fiche = self.get_form(fiche_id)
-        if fiche is None:
-            return False
-
-        theme = theme.strip().lower()
-
-        # Normalisation pour correspondance
-        for t in fiche.tags:
-            if t.lower() == theme:
-                fiche.tags.remove(t)
-                return True
-
-        return False
-
     # ----------------------------------------------------------
-    # Recherche et filtrage
+    # Recherche
     # ----------------------------------------------------------
 
-    def rechercher(self, mot_clef: str) -> List[forms]:
-        """Recherche dans le titre et le contenu."""
+    def rechercher(self, mot_clef: str) -> List[Form]:
         mot_clef = mot_clef.lower()
         return [
-            fiche for fiche in self.fiches
-            if mot_clef in fiche.titre.lower() or mot_clef in fiche.contenu.lower()
+            f for f in self.fiches
+            if mot_clef in f.question.lower() or mot_clef in f.reponse.lower()
         ]
 
-    def filtrer_par_tag(self, tag: str) -> List[forms]:
-        """Retourne les fiches qui contiennent un tag donné."""
-        return [fiche for fiche in self.fiches if tag in fiche.tags]
+    # ----------------------------------------------------------
+    # Révision
+    # ----------------------------------------------------------
 
-    """
-    # ----------------------------------------------------------
-    # Révision : fiches à revoir selon la date
-    # ----------------------------------------------------------
-    def fiches_a_reviser(self) -> List[forms]:
-        
-        #Retourne les fiches qui doivent être révisées
-        #(dernière révision + intervalle <= maintenant).
-        
+    def fiches_a_reviser(self) -> List[Form]:
         maintenant = datetime.now()
-        a_reviser = []
-        for fiche in self.fiches:
-            prochaine_revision = fiche.derniere_revision.replace() \
-                + timedelta(days=fiche.intervalle)
+        return [
+            fiche for fiche in self.fiches
+            if fiche.derniere_revision + timedelta(days=fiche.intervalle) <= maintenant
+        ]
 
-            if prochaine_revision <= maintenant:
-                a_reviser.append(fiche)
-
-        return a_reviser
-    """
     # ----------------------------------------------------------
-    # Import / Export interne (pour StorageManager)
+    # Import / export
     # ----------------------------------------------------------
 
-    def charger_fiches(self, fiches: List[forms]):
-        """
-        Charge une liste de fiches depuis le stockage.
-        Réinitialise le système d'ID.
-        """
+    def charger_fiches(self, fiches: List[Form]):
         self.fiches = fiches
-        if fiches:
-            self._next_id = max(f.id for f in fiches) + 1
-        else:
-            self._next_id = 1
+        self._next_id = max((f.id for f in fiches), default=0) + 1
 
-    def toutes_les_fiches(self) -> List[forms]:
-        """Renvoie toutes les fiches existantes."""
+    def toutes_les_fiches(self) -> List[Form]:
         return self.fiches
 
 """
