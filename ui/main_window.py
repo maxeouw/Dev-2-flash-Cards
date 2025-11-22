@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from ui.fiches_view import FichesView
+from ui.fiches_view import AddFormPage
 from ui.revision_view import RevisionView
+from core.formManager import FormsManager
 
 
 class MainWindow(tk.Tk):
@@ -25,6 +26,7 @@ class MainWindow(tk.Tk):
         self.page_container = ttk.Frame(self)
         self.page_container.pack(fill="both", expand=True)
 
+        self.forms_manager = FormsManager()
         # Initialisation des pages
         self.pages = {}
         self.create_pages()
@@ -42,8 +44,8 @@ class MainWindow(tk.Tk):
         self.pages["MainMenu"].grid(row=0, column=0, sticky="nsew")
 
         # Page fiches
-        self.pages["Fiches"] = FichesView(self.page_container, self)
-        self.pages["Fiches"].grid(row=0, column=0, sticky="nsew")
+        self.pages["AddForm"] = AddFormPage(self.page_container, self, self.forms_manager)
+        self.pages["AddForm"].grid(row=0, column=0, sticky="nsew")
 
         #Page de revision
         self.pages["Revision"] = RevisionView(self.page_container, self)
@@ -91,7 +93,7 @@ class MainMenuPage(ttk.Frame):
         menu_frame.pack(pady=10)
 
         self.add_btn(menu_frame, "📘 Gérer mes fiches",
-                     lambda: controller.show_page("Fiches"))
+                     lambda: controller.show_page("AddForm"))
         self.add_btn(menu_frame, "🧠 Commencer une révision",
                      lambda: controller.show_page("Revision"))
         self.add_btn(menu_frame, "📊 Tableau de bord",
