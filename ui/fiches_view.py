@@ -29,7 +29,11 @@ class AddFormPage(ttk.Frame):
         ttk.Button(btn_frame, text="Créer la fiche", command=self.creer_fiche).pack(
             side="left", padx=10
         )
-
+        
+        ttk.Button(btn_frame, text="Visualiser les fiches", command=self.display_forms).pack(
+            side="left", padx=10
+        )
+        
         ttk.Button(btn_frame, text="Retour", command=lambda: controller.show_page("MainMenu")).pack(
             side="left", padx=10
         )
@@ -38,18 +42,37 @@ class AddFormPage(ttk.Frame):
     def creer_fiche(self):
         question = self.question_entry.get().strip()
         reponse = self.reponse_text.get("1.0", "end").strip()
-        tags_raw = self.tags_entry.get().strip()
 
         if not question or not reponse:
             messagebox.showerror("Erreur", "La question et la réponse sont obligatoires.")
             return
 
-        tags = [t.strip() for t in tags_raw.split(",") if t.strip()]
+        fiche = self.forms_manager.create_form(question, reponse)
 
-        self.forms_manager.create_form(question, reponse, tags)
+        print(f"\n Nouvelle fiche créée :")
+        print(f"ID : {fiche.id}")
+        print(f"Question : {fiche.question}")
+        print(f"Réponse : {fiche.reponse}\n")
 
         messagebox.showinfo("Succès", "La fiche a été créée !")
 
         self.question_entry.delete(0, "end")
         self.reponse_text.delete("1.0", "end")
-        self.tags_entry.delete(0, "end")
+
+    
+    def display_forms(self):
+        fiches = self.forms_manager.toutes_les_fiches()
+
+        if not fiches:
+            print("\n Aucune fiche n'a encore été créée.\n")
+            return
+
+        print("\n Fiches de la session :")
+        print("----------------------------------------")
+
+        for fiche in fiches:
+            print(f"ID : {fiche.id}")
+            print(f"Question : {fiche.question}")
+            print(f"Réponse : {fiche.reponse}")
+            print(f"Tags : {fiche.tags}")
+            print("----------------------------------------")

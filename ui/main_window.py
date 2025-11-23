@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from ui.fiches_view import AddFormPage
-from ui.revision_view import RevisionView
+from ui.revision_view import RevisionPage
 from core.formManager import FormsManager
 
 
@@ -48,7 +48,7 @@ class MainWindow(tk.Tk):
         self.pages["AddForm"].grid(row=0, column=0, sticky="nsew")
 
         #Page de revision
-        self.pages["Revision"] = RevisionView(self.page_container, self)
+        self.pages["Revision"] = RevisionPage(self.page_container, self, self.forms_manager)
         self.pages["Revision"].grid(row=0, column=0, sticky="nsew")
 
     # ---------------------------------------------------------
