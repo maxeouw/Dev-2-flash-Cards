@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from ui.fiches_view import AddFormPage
+from ui.fiches_view import FichesViewPage
 from ui.revision_view import RevisionPage
 from core.formManager import FormsManager
-
+from ui.add_form_page import AddFormPage
+from ui.add_paquet_page import AddPaquetPage
 
 class MainWindow(tk.Tk):
     def __init__(self):
@@ -43,6 +44,9 @@ class MainWindow(tk.Tk):
         self.pages["MainMenu"] = MainMenuPage(self.page_container, self)
         self.pages["MainMenu"].grid(row=0, column=0, sticky="nsew")
 
+        self.pages["FichesView"] = FichesViewPage(self.page_container, self, self.forms_manager)
+        self.pages["FichesView"].grid(row=0, column=0, sticky="nsew")
+
         # Page fiches
         self.pages["AddForm"] = AddFormPage(self.page_container, self, self.forms_manager)
         self.pages["AddForm"].grid(row=0, column=0, sticky="nsew")
@@ -51,6 +55,9 @@ class MainWindow(tk.Tk):
         self.pages["Revision"] = RevisionPage(self.page_container, self, self.forms_manager)
         self.pages["Revision"].grid(row=0, column=0, sticky="nsew")
 
+        #Page d'ajout de paquets
+        self.pages["AddPaquet"] = AddPaquetPage(self.page_container, self)
+        self.pages["AddPaquet"].grid(row=0, column=0, sticky="nsew")
     # ---------------------------------------------------------
     # Affichage d'une page
     # ---------------------------------------------------------
@@ -93,7 +100,7 @@ class MainMenuPage(ttk.Frame):
         menu_frame.pack(pady=10)
 
         self.add_btn(menu_frame, "📘 Gérer mes fiches",
-                     lambda: controller.show_page("AddForm"))
+                     lambda: controller.show_page("FichesView"))
         self.add_btn(menu_frame, "🧠 Commencer une révision",
                      lambda: controller.show_page("Revision"))
         self.add_btn(menu_frame, "📊 Tableau de bord",

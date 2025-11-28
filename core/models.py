@@ -13,12 +13,12 @@ class Form:
     intervalle: int = 1
     niveau: int = 0
     media: List[str] = field(default_factory=list)
+    #knowledge: str
 
     @property
     def titre(self) -> str:
         """Alias pour compatibilité : le titre = la question."""
         return self.question
-
 
 
 @dataclass

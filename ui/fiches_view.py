@@ -1,64 +1,48 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 
-class AddFormPage(ttk.Frame):
+
+class FichesViewPage(ttk.Frame):
     def __init__(self, parent, controller, forms_manager):
         super().__init__(parent)
 
         self.controller = controller
         self.forms_manager = forms_manager
 
-        ttk.Label(self, text="Créer une nouvelle fiche", font=("Segoe UI", 16, "bold")).pack(
-            pady=20
-        )
+        ttk.Label(
+            self,
+            text="Gestion des fiches",
+            font=("Segoe UI", 16, "bold")
+        ).pack(pady=30)
 
-        # --- Champ Question ---
-        ttk.Label(self, text="Question :").pack(anchor="w", padx=20)
-        self.question_entry = ttk.Entry(self, width=60)
-        self.question_entry.pack(padx=20, pady=5)
+        ttk.Button(
+            self,
+            text="➕ Ajouter une fiche",
+            command=lambda: controller.show_page("AddForm")
+        ).pack(pady=10, ipadx=10, ipady=5)
 
-        # --- Champ Réponse ---
-        ttk.Label(self, text="Réponse :").pack(anchor="w", padx=20)
-        self.reponse_text = tk.Text(self, width=60, height=8)
-        self.reponse_text.pack(padx=20, pady=5)
-
-        # --- Boutons ---
-        btn_frame = ttk.Frame(self)
-        btn_frame.pack(pady=20)
-
-        ttk.Button(btn_frame, text="Créer la fiche", command=self.creer_fiche).pack(
-            side="left", padx=10
-        )
+        ttk.Button(
+            self,
+            text="Gérer les fiches",
+            command=self.display_forms
+        ).pack(pady=10, ipadx=10, ipady=5)
         
-        ttk.Button(btn_frame, text="Visualiser les fiches", command=self.display_forms).pack(
-            side="left", padx=10
-        )
-        
-        ttk.Button(btn_frame, text="Retour", command=lambda: controller.show_page("MainMenu")).pack(
-            side="left", padx=10
-        )
+        ttk.Button(
+            self,
+            text="➕ Ajouter un paquet",
+            command=lambda: controller.show_page("AddPaquet")
+        ).pack(pady=10, ipadx=10, ipady=5)
 
-    # ----------------------------------------------------------
-    def creer_fiche(self):
-        question = self.question_entry.get().strip()
-        reponse = self.reponse_text.get("1.0", "end").strip()
+        ttk.Button(
+            self,
+            text="Gérer les paquets"
+        ).pack(pady=10, ipadx=10, ipady=5)
 
-        if not question or not reponse:
-            messagebox.showerror("Erreur", "La question et la réponse sont obligatoires.")
-            return
-
-        fiche = self.forms_manager.create_form(question, reponse)
-
-        print(f"\n Nouvelle fiche créée :")
-        print(f"ID : {fiche.id}")
-        print(f"Question : {fiche.question}")
-        print(f"Réponse : {fiche.reponse}\n")
-
-        messagebox.showinfo("Succès", "La fiche a été créée !")
-
-        self.question_entry.delete(0, "end")
-        self.reponse_text.delete("1.0", "end")
-
+        ttk.Button(
+            self,
+            text="Retour",
+            command=lambda: controller.show_page("MainMenu")
+        ).pack(pady=10, ipadx=10, ipady=5)
     
     def display_forms(self):
         fiches = self.forms_manager.toutes_les_fiches()
