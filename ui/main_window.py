@@ -5,6 +5,7 @@ from ui.revision_view import RevisionPage
 from core.formManager import FormsManager
 from ui.add_form_page import AddFormPage
 from ui.add_paquet_page import AddPaquetPage
+from ui.forms_list import ListeFichesPage
 
 class MainWindow(tk.Tk):
     def __init__(self):
@@ -58,6 +59,11 @@ class MainWindow(tk.Tk):
         #Page d'ajout de paquets
         self.pages["AddPaquet"] = AddPaquetPage(self.page_container, self)
         self.pages["AddPaquet"].grid(row=0, column=0, sticky="nsew")
+
+        #Page gestion des fiches
+        self.pages["FormList"] = ListeFichesPage(self.page_container,self, self.forms_manager)
+        self.pages["FormList"].grid(row=0, column=0, sticky="nsew")
+
     # ---------------------------------------------------------
     # Affichage d'une page
     # ---------------------------------------------------------
@@ -99,7 +105,7 @@ class MainMenuPage(ttk.Frame):
         menu_frame = ttk.Frame(self)
         menu_frame.pack(pady=10)
 
-        self.add_btn(menu_frame, "📘 Gérer mes fiches",
+        self.add_btn(menu_frame, "📘 Gérer mes fiches et paquets",
                      lambda: controller.show_page("FichesView"))
         self.add_btn(menu_frame, "🧠 Commencer une révision",
                      lambda: controller.show_page("Revision"))

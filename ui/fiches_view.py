@@ -11,7 +11,7 @@ class FichesViewPage(ttk.Frame):
 
         ttk.Label(
             self,
-            text="Gestion des fiches",
+            text="Gestion des fiches et paquets",
             font=("Segoe UI", 16, "bold")
         ).pack(pady=30)
 
@@ -24,7 +24,7 @@ class FichesViewPage(ttk.Frame):
         ttk.Button(
             self,
             text="Gérer les fiches",
-            command=self.display_forms
+            command=lambda: self.open_forms_list()
         ).pack(pady=10, ipadx=10, ipady=5)
         
         ttk.Button(
@@ -44,19 +44,9 @@ class FichesViewPage(ttk.Frame):
             command=lambda: controller.show_page("MainMenu")
         ).pack(pady=10, ipadx=10, ipady=5)
     
-    def display_forms(self):
-        fiches = self.forms_manager.toutes_les_fiches()
+    def open_forms_list(self):
 
-        if not fiches:
-            print("\n Aucune fiche n'a encore été créée.\n")
-            return
+        page = self.controller.pages["FormList"]
+        page.update_list()
 
-        print("\n Fiches de la session :")
-        print("----------------------------------------")
-
-        for fiche in fiches:
-            print(f"ID : {fiche.id}")
-            print(f"Question : {fiche.question}")
-            print(f"Réponse : {fiche.reponse}")
-            print(f"Tags : {fiche.tags}")
-            print("----------------------------------------")
+        self.controller.show_page("FormList")

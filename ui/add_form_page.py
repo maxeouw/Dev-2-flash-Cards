@@ -50,7 +50,5 @@ class AddFormPage(ttk.Frame):
         print(f"Question : {fiche.question}")
         print(f"Réponse : {fiche.reponse}\n")
 
-        messagebox.showinfo("Succès", "La fiche a été créée !")
-
         self.question_entry.delete(0, "end")
         self.reponse_text.delete("1.0", "end")
