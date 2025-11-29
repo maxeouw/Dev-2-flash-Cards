@@ -7,6 +7,8 @@ from ui.add_form_page import AddFormPage
 from ui.add_paquet_page import AddPaquetPage
 from ui.forms_list import ListeFichesPage
 from core.storage import StorageManager
+from ui.edit_format_page import EditFormPage
+
 
 class MainWindow(tk.Tk):
     def __init__(self):
@@ -67,6 +69,11 @@ class MainWindow(tk.Tk):
         #Page gestion des fiches
         self.pages["FormList"] = ListeFichesPage(self.page_container,self, self.forms_manager)
         self.pages["FormList"].grid(row=0, column=0, sticky="nsew")
+
+        #Page édition des fiches
+        self.pages["EditForm"] = EditFormPage(self.page_container, self, self.forms_manager)
+        self.pages["EditForm"].grid(row=0, column=0, sticky="nsew")
+
 
     # ---------------------------------------------------------
     # Affichage d'une page

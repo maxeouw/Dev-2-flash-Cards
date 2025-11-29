@@ -29,6 +29,9 @@ class ListeFichesPage(ttk.Frame):
 
         self.tree.pack(padx=20, pady=10, fill="both", expand=True)
 
+        # --- Double-clic pour éditer ---
+        self.tree.bind("<Double-1>", self.on_double_click)
+
         # --- Bouton retour ---
         ttk.Button(
             self,
@@ -50,3 +53,22 @@ class ListeFichesPage(ttk.Frame):
                 "end",
                 values=(fiche.id, fiche.question, fiche.reponse)
             )
+    # --------------------------------------------------
+    def on_double_click(self, event):
+        """Gère le double-clic sur une fiche."""
+        selection = self.tree.selection()
+        
+        if not selection:
+            return
+        
+        # Récupère l'ID de la fiche sélectionnée
+        item = selection[0]
+        values = self.tree.item(item, 'values')
+        fiche_id = int(values[0])
+        
+        # Charge la fiche dans la page d'édition
+        edit_page = self.controller.pages["EditForm"]
+        edit_page.charger_fiche(fiche_id)
+        
+        # Affiche la page d'édition
+        self.controller.show_page("EditForm")
