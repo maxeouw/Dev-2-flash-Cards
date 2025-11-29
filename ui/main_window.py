@@ -6,6 +6,7 @@ from core.formManager import FormsManager
 from ui.add_form_page import AddFormPage
 from ui.add_paquet_page import AddPaquetPage
 from ui.forms_list import ListeFichesPage
+from core.storage import StorageManager
 
 class MainWindow(tk.Tk):
     def __init__(self):
@@ -28,7 +29,10 @@ class MainWindow(tk.Tk):
         self.page_container = ttk.Frame(self)
         self.page_container.pack(fill="both", expand=True)
 
-        self.forms_manager = FormsManager()
+        # Gestionnaires de stockage et de fiches
+        self.storage_manager = StorageManager()
+        self.forms_manager = FormsManager(self.storage_manager)
+
         # Initialisation des pages
         self.pages = {}
         self.create_pages()

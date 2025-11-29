@@ -5,6 +5,8 @@ from core.models import Form
 
 from typing import List, Optional
 from datetime import datetime, timedelta
+from core.storage import StorageManager
+
 
 class FormsManager:
     """
@@ -12,9 +14,11 @@ class FormsManager:
     recherche et sélection pour la révision.
     """
 
-    def __init__(self):
+    def __init__(self, storage: StorageManager):
         self.fiches: List[Form] = []
         self._next_id = 1
+        self.storage = storage
+        self.charger_fiches_depuis_db()
 
     # ----------------------------------------------------------
     # CRUD
@@ -33,6 +37,10 @@ class FormsManager:
             reponse=reponse,
             tags=tags if tags else [],
         )
+
+        db_id = self.storage.add_form_to_db(fiche)
+        fiche.id = db_id
+
         self.fiches.append(fiche)
         self._next_id += 1
         return fiche
@@ -89,6 +97,14 @@ class FormsManager:
 
     def toutes_les_fiches(self) -> List[Form]:
         return self.fiches
+    
+    # ----------------------------------------------------------
+    # Chargement depuis la DB
+    # ----------------------------------------------------------
+    def charger_fiches_depuis_db(self):
+        self.fiches = self.storage.load_all_forms()
+        self._next_id = max((f.id for f in self.fiches), default=0) + 1
+
 
 """
 class SpacesRepetitionEngine:
