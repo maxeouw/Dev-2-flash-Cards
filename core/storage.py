@@ -30,8 +30,6 @@ class StorageManager:
                 pass
                 """
 
-
-
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS carte(
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,6 +66,36 @@ class StorageManager:
             ))
             db.commit()
             return cursor.lastrowid
+
+    def update_form_in_db(self, form: Form) -> bool:
+        """Met à jour une fiche dans la DB."""
+        tags_str = ",".join(form.tags) if form.tags else ""
+        with sqlite3.connect(self.db_path) as db:
+            cursor = db.cursor()
+            cursor.execute("""
+                UPDATE carte
+                SET question = ?, reponse = ?, tags = ?, 
+                    derniere_revision = ?, intervalle = ?, niveau = ?
+                WHERE id = ?
+            """, (
+                form.question,
+                form.reponse,
+                tags_str,
+                form.derniere_revision.isoformat(),
+                form.intervalle,
+                form.niveau,
+                form.id
+            ))
+            db.commit()
+            return cursor.rowcount > 0
+
+    def delete_form_from_db(self, fiche_id: int) -> bool:
+        """Supprime une fiche de la DB."""
+        with sqlite3.connect(self.db_path) as db:
+            cursor = db.cursor()
+            cursor.execute("DELETE FROM carte WHERE id = ?", (fiche_id,))
+            db.commit()
+            return cursor.rowcount > 0
 
     def load_all_forms(self) -> List[Form]:
         """Charge toutes les fiches depuis la DB."""

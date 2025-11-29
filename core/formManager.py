@@ -46,18 +46,25 @@ class FormsManager:
         return fiche
 
     def delete_form(self, fiche_id: int) -> bool:
+        """Supprime une fiche de la liste ET de la DB."""
         for fiche in self.fiches:
             if fiche.id == fiche_id:
                 self.fiches.remove(fiche)
+                # Supprime aussi de la DB
+                self.storage.delete_form_from_db(fiche_id)
                 return True
         return False
 
     def modify_form(self, fiche_modifiee: Form) -> bool:
+        """Modifie une fiche en mémoire ET dans la DB."""
         for i, fiche in enumerate(self.fiches):
             if fiche.id == fiche_modifiee.id:
                 self.fiches[i] = fiche_modifiee
+                # Met à jour aussi la DB
+                self.storage.update_form_in_db(fiche_modifiee)
                 return True
         return False
+
 
     def get_form(self, fiche_id: int) -> Optional[Form]:
         for fiche in self.fiches:
