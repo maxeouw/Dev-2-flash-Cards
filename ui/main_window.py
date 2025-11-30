@@ -8,6 +8,7 @@ from ui.add_paquet_page import AddPaquetPage
 from ui.forms_list import ListeFichesPage
 from core.storage import StorageManager
 from ui.edit_format_page import EditFormPage
+from ui.manage_paquets_page import ManagePaquetsPage
 
 
 class MainWindow(tk.Tk):
@@ -63,7 +64,7 @@ class MainWindow(tk.Tk):
         self.pages["Revision"].grid(row=0, column=0, sticky="nsew")
 
         #Page d'ajout de paquets
-        self.pages["AddPaquet"] = AddPaquetPage(self.page_container, self)
+        self.pages["AddPaquet"] = AddPaquetPage(self.page_container, self, self.forms_manager)
         self.pages["AddPaquet"].grid(row=0, column=0, sticky="nsew")
 
         #Page gestion des fiches
@@ -74,6 +75,9 @@ class MainWindow(tk.Tk):
         self.pages["EditForm"] = EditFormPage(self.page_container, self, self.forms_manager)
         self.pages["EditForm"].grid(row=0, column=0, sticky="nsew")
 
+        #Page de gestion des fiches
+        self.pages["EditDecks"] = ManagePaquetsPage(self.page_container, self, self.forms_manager)
+        self.pages["EditDecks"].grid(row=0, column=0, sticky="nsew")
 
     # ---------------------------------------------------------
     # Affichage d'une page

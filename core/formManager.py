@@ -1,8 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
-from core.models import Form
-
-
+from core.models import Form, Deck
 from typing import List, Optional
 from datetime import datetime, timedelta
 from core.storage import StorageManager
@@ -16,7 +14,9 @@ class FormsManager:
 
     def __init__(self, storage: StorageManager):
         self.fiches: List[Form] = []
+        self.decks: List[Deck] = []
         self._next_id = 1
+        self._next_deck_id = 1
         self.storage = storage
         self.charger_fiches_depuis_db()
 
@@ -72,6 +72,15 @@ class FormsManager:
                 return fiche
         return None
 
+    def create_deck(self, nom: str) -> Deck:
+        """Créer un nouveau deck (sans DB pour l'instant)."""
+        deck = Deck(
+            id=self._next_deck_id,
+            nom=nom
+        )
+        self.decks.append(deck)
+        self._next_deck_id += 1
+        return deck
     # ----------------------------------------------------------
     # Recherche
     # ----------------------------------------------------------
@@ -102,9 +111,17 @@ class FormsManager:
         self.fiches = fiches
         self._next_id = max((f.id for f in fiches), default=0) + 1
 
+    def charger_decks(self, decks: List[Deck]):
+        self.decks = decks
+        self._next_deck_id = max((d.id for d in decks), default=0) + 1
+
     def toutes_les_fiches(self) -> List[Form]:
         return self.fiches
     
+    def tous_les_decks(self) -> List[Deck]:
+        return self.decks
+    
+
     # ----------------------------------------------------------
     # Chargement depuis la DB
     # ----------------------------------------------------------
@@ -112,6 +129,16 @@ class FormsManager:
         self.fiches = self.storage.load_all_forms()
         self._next_id = max((f.id for f in self.fiches), default=0) + 1
 
+    # ----------------------------------------------------------
+    # Ajout des fiches aux decks
+    # ----------------------------------------------------------
+    def ajouter_fiche_a_deck(self, deck_id: int, fiche_id: int) -> bool:
+        for deck in self.decks:
+            if deck.id == deck_id:
+                if fiche_id not in deck.fiche_ids:
+                    deck.fiche_ids.append(fiche_id)
+                return True
+        return False
 
 """
 class SpacesRepetitionEngine:

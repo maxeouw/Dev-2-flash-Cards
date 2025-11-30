@@ -22,5 +22,7 @@ class Form:
 
 
 @dataclass
-class deck:
-    pass
+class Deck:
+    id: int
+    nom: str
+    #fiche_ids: List[int] = field(default_factory=list)

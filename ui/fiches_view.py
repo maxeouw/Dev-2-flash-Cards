@@ -35,7 +35,8 @@ class FichesViewPage(ttk.Frame):
 
         ttk.Button(
             self,
-            text="Gérer les paquets"
+            text="Gérer les paquets",
+            command=lambda: controller.show_page("EditDecks")
         ).pack(pady=10, ipadx=10, ipady=5)
 
         ttk.Button(

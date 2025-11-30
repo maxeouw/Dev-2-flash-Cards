@@ -3,10 +3,11 @@ from tkinter import ttk, messagebox
 
 
 class AddPaquetPage(ttk.Frame):
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller, forms_manager):
         super().__init__(parent)
 
         self.controller = controller
+        self.forms_manager = forms_manager
 
         ttk.Label(
             self,
@@ -35,7 +36,6 @@ class AddPaquetPage(ttk.Frame):
             command=lambda: controller.show_page("FichesView")
         ).pack(side="left", padx=10, ipadx=10, ipady=5)
 
-    # Pour l'instant : UI uniquement
     def creer_paquet(self):
         nom = self.nom_paquet_entry.get().strip()
 
@@ -43,7 +43,10 @@ class AddPaquetPage(ttk.Frame):
             messagebox.showerror("Erreur", "Le nom du paquet est obligatoire.")
             return
 
-        # --- Pas encore de logique métier, seulement un print ---
-        print("\n📦 Nouveau paquet créé (UI uniquement) :")
-        print(f"Nom : {nom}\n")
+        deck = self.forms_manager.create_deck(nom)
+
+        print("\n📦 Nouveau paquet créé :")
+        print(f"ID : {deck.id}")
+        print(f"Nom : {deck.nom}\n")
+
         self.nom_paquet_entry.delete(0, "end")
