@@ -36,7 +36,7 @@ class FichesViewPage(ttk.Frame):
         ttk.Button(
             self,
             text="Gérer les paquets",
-            command=lambda: controller.show_page("EditDecks")
+            command=lambda: self.open_paquets_list()
         ).pack(pady=10, ipadx=10, ipady=5)
 
         ttk.Button(
@@ -51,3 +51,11 @@ class FichesViewPage(ttk.Frame):
         page.update_list()
 
         self.controller.show_page("FormList")
+
+    def open_paquets_list(self):
+        # Recharger et afficher depuis la DB (pour avoir les nouveaux paquets)
+        self.forms_manager.charger_decks_depuis_db()
+
+        page = self.controller.pages["EditDecks"]
+        page.update_list()
+        self.controller.show_page("EditDecks")

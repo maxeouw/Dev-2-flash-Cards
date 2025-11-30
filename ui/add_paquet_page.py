@@ -44,9 +44,5 @@ class AddPaquetPage(ttk.Frame):
             return
 
         deck = self.forms_manager.create_deck(nom)
-
-        print("\n📦 Nouveau paquet créé :")
-        print(f"ID : {deck.id}")
-        print(f"Nom : {deck.nom}\n")
-
+        
         self.nom_paquet_entry.delete(0, "end")

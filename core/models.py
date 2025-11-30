@@ -25,4 +25,4 @@ class Form:
 class Deck:
     id: int
     nom: str
-    #fiche_ids: List[int] = field(default_factory=list)
+    fiche_ids: List[int] = field(default_factory=list)

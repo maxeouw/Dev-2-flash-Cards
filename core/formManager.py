@@ -19,6 +19,7 @@ class FormsManager:
         self._next_deck_id = 1
         self.storage = storage
         self.charger_fiches_depuis_db()
+        self.charger_decks_depuis_db()
 
     # ----------------------------------------------------------
     # CRUD
@@ -78,6 +79,8 @@ class FormsManager:
             id=self._next_deck_id,
             nom=nom
         )
+        db_id = self.storage.add_deck_to_db(deck)
+        deck.id = db_id
         self.decks.append(deck)
         self._next_deck_id += 1
         return deck
@@ -123,11 +126,14 @@ class FormsManager:
     
 
     # ----------------------------------------------------------
-    # Chargement depuis la DB
+    # Chargement depuis la DB (Decks et Fiches)
     # ----------------------------------------------------------
     def charger_fiches_depuis_db(self):
         self.fiches = self.storage.load_all_forms()
         self._next_id = max((f.id for f in self.fiches), default=0) + 1
+    def charger_decks_depuis_db(self):
+        self.decks = self.storage.load_all_decks()
+        self._next_deck_id = max((d.id for d in self.decks), default=0) + 1
 
     # ----------------------------------------------------------
     # Ajout des fiches aux decks

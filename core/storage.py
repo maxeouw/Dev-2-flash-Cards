@@ -31,6 +31,13 @@ class StorageManager:
                 """
 
             cursor.execute("""
+                CREATE TABLE IF NOT EXISTS categorie(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nom TEXT NOT NULL
+                )
+            """)
+
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS carte(
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     question TEXT NOT NULL,
@@ -118,3 +125,32 @@ class StorageManager:
                 media=[]
             ))
         return forms
+
+# Decks
+
+    def add_deck_to_db(self, deck) -> int:
+        """Insère un deck dans la DB et retourne son ID."""
+        with sqlite3.connect(self.db_path) as db:
+            cursor = db.cursor()
+            cursor.execute("""
+                INSERT INTO categorie (nom)
+                VALUES (?)
+            """, (deck.nom,))
+            db.commit()
+            return cursor.lastrowid
+
+    def load_all_decks(self):
+        """Charge tous les decks depuis la DB."""
+        from core.models import Deck
+        decks = []
+        with sqlite3.connect(self.db_path) as db:
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM categorie")
+            rows = cursor.fetchall()
+
+        for row in rows:
+            decks.append(Deck(
+                id=row[0],
+                nom=row[1]
+            ))
+        return decks
