@@ -9,6 +9,7 @@ from ui.forms_list import ListeFichesPage
 from core.storage import StorageManager
 from ui.edit_format_page import EditFormPage
 from ui.manage_paquets_page import ManagePaquetsPage
+from ui.revision_session_page import RevisionSessionPage
 
 
 class MainWindow(tk.Tk):
@@ -59,7 +60,7 @@ class MainWindow(tk.Tk):
         self.pages["AddForm"] = AddFormPage(self.page_container, self, self.forms_manager)
         self.pages["AddForm"].grid(row=0, column=0, sticky="nsew")
 
-        #Page de revision
+        #Page de lancement de revision
         self.pages["Revision"] = RevisionPage(self.page_container, self, self.forms_manager)
         self.pages["Revision"].grid(row=0, column=0, sticky="nsew")
 
@@ -79,11 +80,19 @@ class MainWindow(tk.Tk):
         self.pages["EditDecks"] = ManagePaquetsPage(self.page_container, self, self.forms_manager)
         self.pages["EditDecks"].grid(row=0, column=0, sticky="nsew")
 
+        #Page de révision
+        self.pages["RevisionSession"] = RevisionSessionPage(self.page_container, self, self.forms_manager)
+        self.pages["RevisionSession"].grid(row=0, column=0, sticky="nsew")
+
     # ---------------------------------------------------------
     # Affichage d'une page
     # ---------------------------------------------------------
     def show_page(self, name: str):
-        self.pages[name].tkraise()
+        page = self.pages[name]
+        
+        if name == "RevisionSession":
+            page.start_session()
+        page.tkraise()
 
 
 # ---------------------------------------------------------

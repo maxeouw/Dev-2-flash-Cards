@@ -12,8 +12,13 @@ class RevisionPage(ttk.Frame):
 
         ttk.Button(
             self,
-            text="Commencer une révision",
-            command=self.start_revision_console
+            text="Réviser toutes les fiches",
+            command=lambda: controller.show_page("RevisionSession")
+        ).pack(pady=10)
+
+        ttk.Button(
+            self,
+            text="Reviser les fiches par themes"
         ).pack(pady=10)
 
         ttk.Button(
