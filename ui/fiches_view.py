@@ -56,6 +56,6 @@ class FichesViewPage(ttk.Frame):
         # Recharger et afficher depuis la DB (pour avoir les nouveaux paquets)
         self.forms_manager.charger_decks_depuis_db()
 
-        page = self.controller.pages["EditDecks"]
+        page = self.controller.pages["DeckList"]
         page.update_list()
-        self.controller.show_page("EditDecks")
+        self.controller.show_page("DeckList")

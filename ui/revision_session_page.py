@@ -97,7 +97,7 @@ class RevisionSessionPage(ttk.Frame):
         self.current_index += 1
 
         if self.current_index >= len(self.fiches):
-            messagebox.showinfo("Révision", "Révision terminée !")
+            #messagebox.showinfo("Révision", "Révision terminée !")
             self.controller.show_page("Revision")
             return
 

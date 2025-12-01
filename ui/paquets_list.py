@@ -30,7 +30,7 @@ class ManagePaquetsPage(ttk.Frame):
         self.tree.pack(padx=20, pady=10, fill="both", expand=True)
 
         # --- Double-clic futur (ex: gérer contenu du deck) ---
-        # self.tree.bind("<Double-1>", self.on_double_click)
+        self.tree.bind("<Double-1>", self.on_double_click)
 
         ttk.Button(
             self,
@@ -52,3 +52,22 @@ class ManagePaquetsPage(ttk.Frame):
                 "end",
                 values=(deck.id, deck.nom, len(deck.fiche_ids))
             )
+    
+    def on_double_click(self, event):
+        """Ouvre la page de détails du deck sélectionné."""
+        selection = self.tree.selection()
+        if not selection:
+            return
+
+        item = selection[0]
+        values = self.tree.item(item, "values")
+        deck_id = int(values[0])
+
+        # Récupération de la page dans le controller
+        deck_page = self.controller.pages["deckGestion"]
+
+        # Charger les infos du deck dans la page
+        deck_page.charger_deck(deck_id)
+
+        # Afficher la page
+        self.controller.show_page("deckGestion")

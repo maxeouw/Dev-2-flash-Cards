@@ -72,7 +72,7 @@ class EditFormPage(ttk.Frame):
         # Sauvegarde la modification
         self.forms_manager.modify_form(fiche)
 
-        messagebox.showinfo("La fiche a bien été modifiée")
+        #messagebox.showinfo("La fiche a bien été modifiée")
         
         # Retour à la liste
         page = self.controller.pages["FormList"]
@@ -82,12 +82,12 @@ class EditFormPage(ttk.Frame):
     # ----------------------------------------------------------
     def supprimer_fiche(self):
         """Supprime la fiche de la base de données."""
-        if messagebox.askyesno("Êtes-vous sûr de bien vouloir supprimer cette fiche ?"):
-            self.forms_manager.delete_form(self.fiche_id)
+        #if messagebox.askyesno("Êtes-vous sûr de bien vouloir supprimer cette fiche ?"):
+        self.forms_manager.delete_form(self.fiche_id)
             
-            messagebox.showinfo("La fiche a bien été suprimée")
+            #messagebox.showinfo("La fiche a bien été suprimée")
             
-            # Retour à la liste
-            page = self.controller.pages["FormList"]
-            page.update_list()
-            self.controller.show_page("FormList")
+        # Retour à la liste
+        page = self.controller.pages["FormList"]
+        page.update_list()
+        self.controller.show_page("FormList")

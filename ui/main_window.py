@@ -8,8 +8,9 @@ from ui.add_paquet_page import AddPaquetPage
 from ui.forms_list import ListeFichesPage
 from core.storage import StorageManager
 from ui.edit_format_page import EditFormPage
-from ui.manage_paquets_page import ManagePaquetsPage
+from ui.paquets_list import ManagePaquetsPage
 from ui.revision_session_page import RevisionSessionPage
+from ui.edit_decks_page import DeckDetailPage
 
 
 class MainWindow(tk.Tk):
@@ -53,6 +54,7 @@ class MainWindow(tk.Tk):
         self.pages["MainMenu"] = MainMenuPage(self.page_container, self)
         self.pages["MainMenu"].grid(row=0, column=0, sticky="nsew")
 
+        # Page de gestion des fiches et des paquets. 
         self.pages["FichesView"] = FichesViewPage(self.page_container, self, self.forms_manager)
         self.pages["FichesView"].grid(row=0, column=0, sticky="nsew")
 
@@ -76,13 +78,17 @@ class MainWindow(tk.Tk):
         self.pages["EditForm"] = EditFormPage(self.page_container, self, self.forms_manager)
         self.pages["EditForm"].grid(row=0, column=0, sticky="nsew")
 
-        #Page de gestion des fiches
-        self.pages["EditDecks"] = ManagePaquetsPage(self.page_container, self, self.forms_manager)
-        self.pages["EditDecks"].grid(row=0, column=0, sticky="nsew")
+        #Page de liste de decks
+        self.pages["DeckList"] = ManagePaquetsPage(self.page_container, self, self.forms_manager)
+        self.pages["DeckList"].grid(row=0, column=0, sticky="nsew")
 
         #Page de révision
         self.pages["RevisionSession"] = RevisionSessionPage(self.page_container, self, self.forms_manager)
         self.pages["RevisionSession"].grid(row=0, column=0, sticky="nsew")
+
+        #Page de gestion des decks
+        self.pages["deckGestion"] = DeckDetailPage(self.page_container, self, self.forms_manager)
+        self.pages["deckGestion"].grid(row=0, column=0, sticky="nsew")
 
     # ---------------------------------------------------------
     # Affichage d'une page
