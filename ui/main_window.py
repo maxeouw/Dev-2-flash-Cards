@@ -95,7 +95,9 @@ class MainWindow(tk.Tk):
     # ---------------------------------------------------------
     def show_page(self, name: str):
         page = self.pages[name]
-        
+        # Actualise le contenu si la page a une méthode update_list (En gros si il y aune liste dans la page)
+        if hasattr(page, "update_list"):
+            page.update_list()
         if name == "RevisionSession":
             page.start_session()
         page.tkraise()
