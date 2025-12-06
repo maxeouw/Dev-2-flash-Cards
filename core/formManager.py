@@ -142,7 +142,14 @@ class FormsManager:
         for deck in self.decks:
             if deck.id == deck_id:
                 if fiche_id not in deck.fiche_ids:
+                    # Ajout en RAM
                     deck.fiche_ids.append(fiche_id)
+
+                    # Ajout en DB
+                    if hasattr(self.storage, 'link_card_to_deck_in_db'):
+                        self.storage.link_card_to_deck_in_db(deck_id, fiche_id)
+                    else:
+                        print("ERREUR : Méthode link_card_to_deck_in_db manquante dans Storage")
                 return True
         return False
 

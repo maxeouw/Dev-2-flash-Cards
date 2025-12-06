@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox, Toplevel
 
 class DeckDetailPage(ttk.Frame):
     def __init__(self, parent, controller, forms_manager):
@@ -30,7 +30,7 @@ class DeckDetailPage(ttk.Frame):
 
         # --- Boutons purement UI (non fonctionnels pour l'instant) ---
         ttk.Button(self, text="Supprimer le paquet").pack(pady=10)
-        ttk.Button(self, text="Lier une fiche").pack(pady=10)
+        ttk.Button(self, text="Lier une fiche",command=self.ouvrir_fenetre_selection).pack(pady=10)
 
         # --- Retour ---
         ttk.Button(
@@ -55,3 +55,51 @@ class DeckDetailPage(ttk.Frame):
         self.title_label.config(text=f"Paquet #{deck.id}")
         self.nom_var.set(deck.nom)                      # ← Remplace le label par un Entry éditable
         self.nb_label.config(text=f"Nombre de fiches : {len(deck.fiche_ids)}")
+
+
+    def ouvrir_fenetre_selection(self):
+        """Ouvre une popup pour choisir une fiche."""
+        if not self.deck:
+            return
+
+        # Pop-up
+        top = Toplevel(self)
+        top.title(f"Ajouter au paquet : {self.deck.nom}")
+        top.geometry("600x400")
+
+        ttk.Label(top, text="Double-cliquez sur une fiche pour l'ajouter").pack(pady=10)
+
+        columns = ("id", "question")
+        tree = ttk.Treeview(top, columns=columns, show="headings")
+        tree.heading("id", text="ID")
+        tree.heading("question", text="Question")
+        tree.column("id", width=50)
+        tree.column("question", width=450)
+        tree.pack(fill="both", expand=True, padx=10, pady=5)
+
+        toutes = self.forms_manager.toutes_les_fiches()
+        for f in toutes:
+            if f.id not in self.deck.fiche_ids:
+                tree.insert("", "end", values=(f.id, f.question))
+
+        # Double clic
+        tree.bind("<Double-1>", lambda e: self.valider_ajout(tree, top))
+
+    def valider_ajout(self, tree, window):
+        """Appelée quand on clique sur une fiche dans la popup."""
+        selection = tree.selection()
+        if not selection:
+            return
+
+        item = selection[0]
+        valeurs = tree.item(item, "values")
+        fiche_id = int(valeurs[0])
+
+        succes = self.forms_manager.ajouter_fiche_a_deck(self.deck.id, fiche_id)
+
+        if succes:
+            messagebox.showinfo("Succès", "Fiche ajoutée au paquet !")
+            self.nb_label.config(text=f"Nombre de fiches : {len(self.deck.fiche_ids)}")
+            window.destroy()
+        else:
+            messagebox.showerror("Erreur", "Impossible d'ajouter la fiche.")

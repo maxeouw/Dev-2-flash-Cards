@@ -26,6 +26,7 @@ class StorageManager:
             try:
                 cursor.execute("DROP TABLE IF EXISTS carte")
                 cursor.execute("DROP TABLE IF EXISTS categorie")
+                cursor.execute("DROP TABLE IF EXISTS lier_fiche_deck")
             except:
                 pass
                 """
@@ -48,6 +49,16 @@ class StorageManager:
                     intervalle INTEGER NOT NULL,
                     niveau INTEGER NOT NULL,
                     media TEXT
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS lier_fiche_deck(
+                    deck_id INTEGER,
+                    card_id INTEGER,
+                    PRIMARY KEY (deck_id, card_id),
+                    FOREIGN KEY(deck_id) REFERENCES categorie(id),
+                    FOREIGN KEY(card_id) REFERENCES carte(id)
                 )
             """)
             db.commit()
@@ -149,8 +160,26 @@ class StorageManager:
             rows = cursor.fetchall()
 
         for row in rows:
+            current_deck_id = row[0]
+            deck_name = row[1]
+                # Récupère ID deck et fiches liées
+            cursor.execute("SELECT card_id FROM lier_fiche_deck WHERE deck_id = ?", (current_deck_id,))
+            fiche_rows = cursor.fetchall()
+            ids_fiches = [f[0] for f in fiche_rows]
+
             decks.append(Deck(
-                id=row[0],
-                nom=row[1]
+                id=current_deck_id,
+                nom=deck_name,
+                fiche_ids=ids_fiches
             ))
         return decks
+    
+    def link_card_to_deck_in_db(self, deck_id: int, card_id: int):
+        """Lie une fiche à un deck dans la DB."""
+        with sqlite3.connect(self.db_path) as db:
+            cursor = db.cursor()
+            cursor.execute("""
+                INSERT OR IGNORE INTO lier_fiche_deck (deck_id, card_id)
+                VALUES (?, ?)
+            """, (deck_id, card_id))
+            db.commit()
