@@ -152,7 +152,16 @@ class FormsManager:
                         print("ERREUR : Méthode link_card_to_deck_in_db manquante dans Storage")
                 return True
         return False
-
+    
+    def get_fiches_by_deck_id(self, deck_id: int) -> List[Form]:
+        """Récupère les Fiche associées à un deck donné."""
+        deck = next((d for d in self.decks if d.id == deck_id), None)
+        if not deck:
+            return []
+        # Vérifier si l'ID de la fiche est présent dans deck.fiche_ids
+        fiches_du_deck = [f for f in self.fiches if f.id in deck.fiche_ids]
+        
+        return fiches_du_deck
 """
 class SpacesRepetitionEngine:
 

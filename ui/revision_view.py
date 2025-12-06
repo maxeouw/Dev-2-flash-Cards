@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, Toplevel
 
 class RevisionPage(ttk.Frame):
     def __init__(self, parent, controller, forms_manager):
@@ -18,8 +18,8 @@ class RevisionPage(ttk.Frame):
 
         ttk.Button(
             self,
-            text="Reviser les fiches par themes"
-        ).pack(pady=10)
+            text="Reviser les fiches par themes", command=self.choisir_deck
+            ).pack(pady=10)
 
         ttk.Button(
             self,
@@ -55,3 +55,53 @@ class RevisionPage(ttk.Frame):
 
         print("\n🎉 Révision terminée !\n")
         messagebox.showinfo("Révision", "La session de révision est terminée !")
+
+    def choisir_deck(self):
+        """Popup pour choisir le deck à réviser."""
+        self.forms_manager.charger_decks_depuis_db()
+        decks = self.forms_manager.tous_les_decks()
+
+        if not decks:
+            messagebox.showinfo("Info", "Aucun paquet n'a été créé.")
+            return
+
+        # fenêtre popup
+        top = Toplevel(self)
+        top.title("Choisir un thème")
+        top.geometry("400x300")
+        ttk.Label(top, text="Double-cliquez sur un paquet pour le réviser :").pack(pady=10)
+
+        # Liste des decks
+        columns = ("id", "nom", "nb")
+        tree = ttk.Treeview(top, columns=columns, show="headings")
+        tree.heading("id", text="#")
+        tree.heading("nom", text="Nom")
+        tree.heading("nb", text="Fiches")
+        
+        tree.column("id", width=40)
+        tree.column("nom", width=200)
+        tree.column("nb", width=60)
+        
+        tree.pack(fill="both", expand=True, padx=10, pady=5)
+
+        for deck in decks:
+            tree.insert("", "end", values=(deck.id, deck.nom, len(deck.fiche_ids)))
+
+        tree.bind("<Double-1>", lambda e: self.lancer_revision_deck(tree, top))
+
+    def lancer_revision_deck(self, tree, window):
+        """Config session avec le deck choisi"""
+        selection = tree.selection()
+        if not selection:
+            return
+
+        item = selection[0]
+        values = tree.item(item, "values")
+        deck_id = int(values[0])
+        
+        window.destroy()
+
+        session_page = self.controller.pages["RevisionSession"]
+        session_page.deck_id_filter = deck_id
+
+        self.controller.show_page("RevisionSession")

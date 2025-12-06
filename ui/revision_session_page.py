@@ -11,6 +11,7 @@ class RevisionSessionPage(ttk.Frame):
 
         self.fiches = []
         self.current_index = 0
+        self.deck_id_filter = None  # ID deck à réviser (None = tous)
 
         ttk.Label(
             self,
@@ -49,7 +50,13 @@ class RevisionSessionPage(ttk.Frame):
 
     def start_session(self):
         """Lancée automatiquement quand on arrive sur la page."""
-        self.fiches = self.forms_manager.toutes_les_fiches()
+        if self.deck_id_filter is not None:
+            # Si filtre actif, on charge uniquement ce deck
+            self.fiches = self.forms_manager.get_fiches_by_deck_id(self.deck_id_filter)
+            self.deck_id_filter = None # IMPORTANT: reset après usage (pour avoir toutes les fiches en mode "tout étudier")
+        else:
+            # Par défaut tout étudier
+            self.fiches = self.forms_manager.toutes_les_fiches()
 
         if not self.fiches:
             messagebox.showinfo("Révision", "Aucune fiche à réviser.")
