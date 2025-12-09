@@ -8,7 +8,6 @@ class RevisionSessionPage(ttk.Frame):
 
         self.controller = controller
         self.forms_manager = forms_manager
-
         self.fiches = []
         self.current_index = 0
         self.deck_id_filter = None  # ID deck à réviser (None = tous)
@@ -26,6 +25,7 @@ class RevisionSessionPage(ttk.Frame):
         # Champ de réponse de l'utilisateur
         self.reponse_entry = ttk.Entry(self, width=50)
         self.reponse_entry.pack(pady=10)
+        self.reponse_entry.bind("<Return>", lambda event: self.question_suivante() if str(self.suivant_btn['state']) == 'normal' else self.valider_reponse())
 
         # Champ VRAI / FAUX
         self.feedback_label = ttk.Label(self, text="", font=("Segoe UI", 12, "bold"))
