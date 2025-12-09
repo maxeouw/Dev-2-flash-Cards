@@ -27,6 +27,10 @@ class RevisionSessionPage(ttk.Frame):
         self.reponse_entry = ttk.Entry(self, width=50)
         self.reponse_entry.pack(pady=10)
 
+        # Champ VRAI / FAUX
+        self.feedback_label = ttk.Label(self, text="", font=("Segoe UI", 12, "bold"))
+        self.feedback_label.pack(pady=5)
+
         # Réponse correcte
         self.reponse_correcte_label = ttk.Label(self, text="", font=("Segoe UI", 11, "italic"))
         self.reponse_correcte_label.pack(pady=10)
@@ -76,13 +80,26 @@ class RevisionSessionPage(ttk.Frame):
         self.reponse_correcte_label.config(text="")
         self.suivant_btn.config(state="disabled")
         self.valider_btn.config(state="normal")
-
+        self.feedback_label.config(text="")
     # -----------------------------------------------------------------------
 
     def valider_reponse(self):
         fiche = self.fiches[self.current_index]
 
         user_answer = self.reponse_entry.get()
+
+        # Comparaison intelligente (espace et casse ignorés)
+        reponse_clean = user_answer.strip().lower()
+        attendue_clean = fiche.reponse.strip().lower()
+
+        if reponse_clean == attendue_clean:
+            self.resultat_reussite = True
+            self.feedback_label.config(text="✅ VRAI", foreground="green")
+            self.reponse_correcte_label.config(text="Bravo !")
+        else:
+            self.resultat_reussite = False
+            self.feedback_label.config(text="❌ FAUX", foreground="red")
+            self.reponse_correcte_label.config(text=f"Réponse correcte : {fiche.reponse}")
 
         # Affiche la réponse correcte
         self.reponse_correcte_label.config(
