@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, Toplevel
+from core.formManager import DeckNotFoundError
 
 class DeckDetailPage(ttk.Frame):
     def __init__(self, parent, controller, forms_manager):
@@ -95,11 +96,24 @@ class DeckDetailPage(ttk.Frame):
         valeurs = tree.item(item, "values")
         fiche_id = int(valeurs[0])
 
-        succes = self.forms_manager.ajouter_fiche_a_deck(self.deck.id, fiche_id)
+        try:
+            self.forms_manager.ajouter_fiche_a_deck(self.deck.id, fiche_id)
 
-        if succes:
-            messagebox.showinfo("Succès", "Fiche ajoutée au deck !")
-            self.nb_label.config(text=f"Nombre de fiches : {len(self.deck.fiche_ids)}")
+            #messagebox.showinfo("Succès", "Fiche ajoutée au deck !")
+            self.nb_label.config(
+                text=f"Nombre de fiches : {len(self.deck.fiche_ids)}"
+            )
             window.destroy()
-        else:
-            messagebox.showerror("Erreur", "Impossible d'ajouter la fiche.")
+
+        except DeckNotFoundError as e:
+            messagebox.showerror(
+                "Deck introuvable",
+                "Le deck sélectionné n'existe plus.\nVeuillez rafraîchir la liste."
+            )
+
+        except Exception as e:
+            # Sécurité : bug inattendu
+            messagebox.showerror(
+                "Erreur inattendue",
+                f"Une erreur est survenue : {e}"
+            )

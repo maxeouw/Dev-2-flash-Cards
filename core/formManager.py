@@ -5,6 +5,9 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from core.storage import StorageManager
 
+class DeckNotFoundError(Exception):
+    "Exception raised if a deck is not found"
+    pass
 
 class FormsManager:
     """
@@ -164,7 +167,7 @@ class FormsManager:
                     else:
                         print("ERREUR : Méthode link_card_to_deck_in_db manquante dans Storage")
                 return True
-        return False
+        raise DeckNotFoundError(f"Deck with id {deck_id} not found")
     
     def get_fiches_by_deck_id(self, deck_id: int) -> List[Form]:
         """Récupère les Fiche associées à un deck donné."""
