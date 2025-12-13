@@ -11,6 +11,7 @@ from ui.edit_format_page import EditFormPage
 from ui.paquets_list import ManagePaquetsPage
 from ui.revision_session_page import RevisionSessionPage
 from ui.edit_decks_page import DeckDetailPage
+from core.audio_manager import AudioManager
 
 
 class MainWindow(tk.Tk):
@@ -29,7 +30,6 @@ class MainWindow(tk.Tk):
         style.configure("TButton", font=("Segoe UI", 11), padding=10)
         style.configure("TLabel", background="#f8f9fa", font=("Segoe UI", 12))
         style.configure("TFrame", background="#f8f9fa")
-
         # --- CONTENEUR CENTRAL DES PAGES ---
         self.page_container = ttk.Frame(self)
         self.page_container.pack(fill="both", expand=True)
@@ -37,6 +37,9 @@ class MainWindow(tk.Tk):
         # Gestionnaires de stockage et de fiches
         self.storage_manager = StorageManager()
         self.forms_manager = FormsManager(self.storage_manager)
+
+        # 1. Moteur audio
+        self.audio_manager = AudioManager()
 
         # Initialisation des pages
         self.pages = {}
@@ -51,7 +54,7 @@ class MainWindow(tk.Tk):
     def create_pages(self):
 
         # Page principale
-        self.pages["MainMenu"] = MainMenuPage(self.page_container, self)
+        self.pages["MainMenu"] = MainMenuPage(self.page_container, self, self.audio_manager)
         self.pages["MainMenu"].grid(row=0, column=0, sticky="nsew")
 
         # Page de gestion des fiches et des decks. 
@@ -100,6 +103,9 @@ class MainWindow(tk.Tk):
             page.update_list()
         if name == "RevisionSession":
             page.start_session()
+        # Focus sur le 1er bouton de la page d'accueil (mode d'accesibilité)
+        if name == "MainMenu" and hasattr(page, "focus_first_button"):
+            page.focus_first_button()
         page.tkraise()
 
 
@@ -107,9 +113,11 @@ class MainWindow(tk.Tk):
 # PAGE D'ACCUEIL
 # ---------------------------------------------------------
 class MainMenuPage(ttk.Frame):
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller, audio_manager=None):
         super().__init__(parent)
         self.controller = controller
+        self.audio_manager = audio_manager
+        self.boutons_menu = []
 
         # --- CONTENEUR CENTRAL (pour centrer tous les éléments) ---
         center_frame = ttk.Frame(self)
@@ -133,6 +141,22 @@ class MainMenuPage(ttk.Frame):
         )
         subtitle_label.pack(pady=(0, 25))
         """
+# --- BOUTON D'ACCESSIBILITÉ ---
+        self.mode_actif = False 
+        toggle_frame = ttk.Frame(self)
+        toggle_frame.pack(pady=20, anchor="n")
+
+        self.mode_var = tk.BooleanVar(value=False)
+        self.checkbox = ttk.Checkbutton(
+            toggle_frame,
+            text="🔊 Mode Accessibilité",
+            variable=self.mode_var,
+            command=self.toggle_mode
+        )
+        self.checkbox.pack(side="left", padx=5)
+        self.status_label = ttk.Label(toggle_frame, text="(désactivé)", foreground="#666")
+        self.status_label.pack(side="left", padx=5)
+        
         # --- Conteneur des boutons ---
         menu_frame = ttk.Frame(self)
         menu_frame.pack(pady=10)
@@ -145,6 +169,9 @@ class MainMenuPage(ttk.Frame):
                      lambda: messagebox.showinfo("Dashboard", "À implémenter"))
         self.add_btn(menu_frame, "Quitter", controller.quit)
 
+        # Activation nav clavier
+        self.setup_navigation()
+
         # --- Citation en bas ---
         quote_label = ttk.Label(
             self,
@@ -154,8 +181,60 @@ class MainMenuPage(ttk.Frame):
         )
         quote_label.pack(side="bottom", pady=20)
 
+    def toggle_mode(self):
+        # Activer/désactiver son, clavier
+        self.mode_actif = self.mode_var.get()
+        if self.audio_manager:
+            self.audio_manager.set_actif(self.mode_actif)
+
+        if self.mode_actif:
+            self.status_label.config(text="(activé)", foreground="#28a745")
+            if self.audio_manager:
+                self.audio_manager.parler("Mode accessibilité activé.")
+            self.focus_first_button()
+        else:
+            self.status_label.config(text="(désactivé)", foreground="#666")
+
     # Ajout d'un bouton stylisé
     def add_btn(self, parent, text, command):
-        ttk.Button(parent, text=text, command=command).pack(
-            pady=8, ipadx=10, ipady=5, fill="x", expand=True
-        )
+        btn = ttk.Button(parent, text=text, command=command)
+        btn.pack(pady=8, ipadx=10, ipady=5, fill="x", expand=True)
+
+        btn.bind("<FocusIn>", lambda e: self.dire(text))
+        btn.bind("<Right>", lambda e: self.action_droite(command))
+        btn.bind("<Left>", lambda e: self.action_gauche())
+
+        self.boutons_menu.append(btn)
+
+    def setup_navigation(self):
+        total = len(self.boutons_menu)
+        for i, btn in enumerate(self.boutons_menu):
+            prev = self.boutons_menu[i - 1]
+            next_btn = self.boutons_menu[(i + 1) % total]
+
+            btn.bind("<Up>", lambda e, b=prev: self.naviguer_vers(b))
+            btn.bind("<Down>", lambda e, b=next_btn: self.naviguer_vers(b))
+
+    # FCT ne font rien si mode désactivé
+    
+    def naviguer_vers(self, widget_cible):
+        if self.mode_actif:
+            widget_cible.focus_set()
+
+    def action_droite(self, command):
+        if self.mode_actif:
+            command()
+
+    def action_gauche(self):
+        if self.mode_actif:
+            self.controller.quit()
+
+    def dire(self, text):
+        if self.audio_manager and self.mode_actif:
+            try:
+                self.audio_manager.parler(f"Bouton : {text}")
+            except: pass
+
+    def focus_first_button(self):
+        if self.boutons_menu and self.mode_actif:
+            self.boutons_menu[0].focus_set()
