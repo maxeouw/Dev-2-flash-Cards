@@ -46,7 +46,24 @@ class FormsManager:
         reponse: Union[str, List[str]],
         tags: Optional[List[str]] = None
     ) -> Form:
-        """Créer une fiche Question/Réponse(s)."""
+        """
+        Create a card in the Question/response format.
+        
+        PRE:
+        - question must be an empty string
+        - response must either be :
+            - a string
+            - a non-empty list of string
+        - tags is initiated to None and could be a list of string
+        - self._next_id must be over zero
+        - self.storage is initialized
+
+        POST:
+        - Returns an instance of Form
+        - The returned form is added to the DB
+        - The returned form is added to the list of forms (self.fiches)
+        - The returned form is assigned an id that is incremented by one from the id of the previously added form
+        """
         fiche = Form(
             id=self._next_id,
             question=question,
