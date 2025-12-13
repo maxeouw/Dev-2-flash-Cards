@@ -8,18 +8,30 @@ from core.storage import StorageManager
 
 class FormsManager:
     """
-    Gère les fiches : création, modification, suppression,
-    recherche et sélection pour la révision.
+    Handles cards : CRUD,
+    research and selection for revision.
     """
 
     def __init__(self, storage: StorageManager):
         self.fiches: List[Form] = []
         self.decks: List[Deck] = []
         self._next_id = 1
-        self._next_deck_id = 1
+        self.__next_deck_id = 1
         self.storage = storage
         self.charger_fiches_depuis_db()
         self.charger_decks_depuis_db()
+
+    @property
+    def next_deck_id(self) -> int:
+        """Getter pour l'ID du prochain deck."""
+        return self.__next_deck_id
+
+    @next_deck_id.setter
+    def next_deck_id(self, value: int):
+        """Setter pour l'ID du prochain deck."""
+        if value < 1:
+            raise ValueError("next_deck_id doit être supérieur ou égal à 1")
+        self.__next_deck_id = value
 
     # ----------------------------------------------------------
     # CRUD
@@ -77,13 +89,13 @@ class FormsManager:
     def create_deck(self, nom: str) -> Deck:
         """Créer un nouveau deck (sans DB pour l'instant)."""
         deck = Deck(
-            id=self._next_deck_id,
+            id=self.next_deck_id,
             nom=nom
         )
         db_id = self.storage.add_deck_to_db(deck)
         deck.id = db_id
         self.decks.append(deck)
-        self._next_deck_id += 1
+        self.next_deck_id += 1
         return deck
     # ----------------------------------------------------------
     # Recherche
@@ -117,7 +129,7 @@ class FormsManager:
 
     def charger_decks(self, decks: List[Deck]):
         self.decks = decks
-        self._next_deck_id = max((d.id for d in decks), default=0) + 1
+        self.next_deck_id = max((d.id for d in decks), default=0) + 1
 
     def toutes_les_fiches(self) -> List[Form]:
         return self.fiches
@@ -134,7 +146,7 @@ class FormsManager:
         self._next_id = max((f.id for f in self.fiches), default=0) + 1
     def charger_decks_depuis_db(self):
         self.decks = self.storage.load_all_decks()
-        self._next_deck_id = max((d.id for d in self.decks), default=0) + 1
+        self.next_deck_id = max((d.id for d in self.decks), default=0) + 1
 
     # ----------------------------------------------------------
     # Ajout des fiches aux decks
