@@ -54,7 +54,7 @@ class MainWindow(tk.Tk):
         self.pages["MainMenu"] = MainMenuPage(self.page_container, self)
         self.pages["MainMenu"].grid(row=0, column=0, sticky="nsew")
 
-        # Page de gestion des fiches et des paquets. 
+        # Page de gestion des fiches et des decks. 
         self.pages["FichesView"] = FichesViewPage(self.page_container, self, self.forms_manager)
         self.pages["FichesView"].grid(row=0, column=0, sticky="nsew")
 
@@ -66,7 +66,7 @@ class MainWindow(tk.Tk):
         self.pages["Revision"] = RevisionPage(self.page_container, self, self.forms_manager)
         self.pages["Revision"].grid(row=0, column=0, sticky="nsew")
 
-        #Page d'ajout de paquets
+        #Page d'ajout de decks
         self.pages["AddPaquet"] = AddPaquetPage(self.page_container, self, self.forms_manager)
         self.pages["AddPaquet"].grid(row=0, column=0, sticky="nsew")
 
@@ -137,13 +137,13 @@ class MainMenuPage(ttk.Frame):
         menu_frame = ttk.Frame(self)
         menu_frame.pack(pady=10)
 
-        self.add_btn(menu_frame, "📘 Gérer mes fiches et paquets",
+        self.add_btn(menu_frame, "Gérer mes fiches et decks",
                      lambda: controller.show_page("FichesView"))
-        self.add_btn(menu_frame, "🧠 Commencer une révision",
+        self.add_btn(menu_frame, "Commencer une révision",
                      lambda: controller.show_page("Revision"))
-        self.add_btn(menu_frame, "📊 Tableau de bord",
+        self.add_btn(menu_frame, "Tableau de bord",
                      lambda: messagebox.showinfo("Dashboard", "À implémenter"))
-        self.add_btn(menu_frame, "🚪 Quitter", controller.quit)
+        self.add_btn(menu_frame, "Quitter", controller.quit)
 
         # --- Citation en bas ---
         quote_label = ttk.Label(

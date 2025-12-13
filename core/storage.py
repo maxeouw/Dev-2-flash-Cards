@@ -16,7 +16,7 @@ class StorageManager:
         self._init_db()
 
     def _init_db(self):
-        """Créer la table 'carte' si elle n'existe pas."""
+        """Créer les tables si elles n'existent pas."""
         with sqlite3.connect(self.db_path) as db:
             cursor = db.cursor()
 
@@ -29,7 +29,7 @@ class StorageManager:
                 cursor.execute("DROP TABLE IF EXISTS lier_fiche_deck")
             except:
                 pass
-                """
+            """
 
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS categorie(
@@ -66,6 +66,7 @@ class StorageManager:
     def add_form_to_db(self, form: Form) -> int:
         """Insère une fiche dans la DB et retourne son ID."""
         tags_str = ",".join(form.tags) if form.tags else ""
+        reponses_str = "|".join(form.reponses) if form.reponses else ""
         with sqlite3.connect(self.db_path) as db:
             cursor = db.cursor()
             cursor.execute("""
@@ -74,7 +75,7 @@ class StorageManager:
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 form.question,
-                form.reponse,
+                reponses_str,
                 tags_str,
                 form.date_creation.isoformat(),
                 form.derniere_revision.isoformat(),
@@ -88,6 +89,7 @@ class StorageManager:
     def update_form_in_db(self, form: Form) -> bool:
         """Met à jour une fiche dans la DB."""
         tags_str = ",".join(form.tags) if form.tags else ""
+        reponses_str = "|".join(form.reponses) if form.reponses else ""
         with sqlite3.connect(self.db_path) as db:
             cursor = db.cursor()
             cursor.execute("""
@@ -97,7 +99,7 @@ class StorageManager:
                 WHERE id = ?
             """, (
                 form.question,
-                form.reponse,
+                reponses_str,
                 tags_str,
                 form.derniere_revision.isoformat(),
                 form.intervalle,
@@ -124,10 +126,12 @@ class StorageManager:
             rows = cursor.fetchall()
 
         for row in rows:
+            reponses_list = row[2].split("|") if row[2] else [""]
+
             forms.append(Form(
                 id=row[0],
                 question=row[1],
-                reponse=row[2],
+                reponses=reponses_list,
                 tags=row[3].split(",") if row[3] else [],
                 date_creation=datetime.fromisoformat(row[4]),
                 derniere_revision=datetime.fromisoformat(row[5]),
@@ -137,7 +141,9 @@ class StorageManager:
             ))
         return forms
 
-# Decks
+    # ----------------------------------------------------------
+    # Decks
+    # ----------------------------------------------------------
 
     def add_deck_to_db(self, deck) -> int:
         """Insère un deck dans la DB et retourne son ID."""
@@ -162,9 +168,13 @@ class StorageManager:
         for row in rows:
             current_deck_id = row[0]
             deck_name = row[1]
-                # Récupère ID deck et fiches liées
-            cursor.execute("SELECT card_id FROM lier_fiche_deck WHERE deck_id = ?", (current_deck_id,))
-            fiche_rows = cursor.fetchall()
+            
+            # Récupère ID deck et fiches liées
+            with sqlite3.connect(self.db_path) as db2:
+                cursor2 = db2.cursor()
+                cursor2.execute("SELECT card_id FROM lier_fiche_deck WHERE deck_id = ?", (current_deck_id,))
+                fiche_rows = cursor2.fetchall()
+            
             ids_fiches = [f[0] for f in fiche_rows]
 
             decks.append(Deck(

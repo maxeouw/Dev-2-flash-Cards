@@ -44,37 +44,37 @@ class EditFormPage(ttk.Frame):
         """Charge la fiche à éditer."""
         self.fiche_id = fiche_id
         fiche = self.forms_manager.get_form(fiche_id)
-        
+    
         if fiche:
             self.question_entry.delete(0, "end")
             self.question_entry.insert(0, fiche.question)
-            
+        
             self.reponse_text.delete("1.0", "end")
-            self.reponse_text.insert("1.0", fiche.reponse)
+            reponses_texte = '\n'.join(fiche.reponses)
+            self.reponse_text.insert("1.0", reponses_texte)
 
     # ----------------------------------------------------------
     def modifier_fiche(self):
         """Modifie la fiche dans la base de données."""
         question = self.question_entry.get().strip()
-        reponse = self.reponse_text.get("1.0", "end").strip()
+        reponses_text = self.reponse_text.get("1.0", "end").strip()  
 
-        if not question or not reponse:
-            messagebox.showerror("Erreur", "La question et la réponse sont obligatoires.")
+        if not question or not reponses_text:
+            messagebox.showerror("Erreur", "La question et au moins une réponse sont obligatoires.")
             return
 
-        # Récupère la fiche originale
+        reponses = [r.strip() for r in reponses_text.split('\n') if r.strip()]
+    
+        if not reponses:
+            messagebox.showerror("Erreur", "Veuillez entrer au moins une réponse.")
+            return
+
         fiche = self.forms_manager.get_form(self.fiche_id)
-        
-        # Modifie les attributs
         fiche.question = question
-        fiche.reponse = reponse
-        
-        # Sauvegarde la modification
+        fiche.reponses = reponses  
+    
         self.forms_manager.modify_form(fiche)
 
-        #messagebox.showinfo("La fiche a bien été modifiée")
-        
-        # Retour à la liste
         page = self.controller.pages["FormList"]
         page.update_list()
         self.controller.show_page("FormList")

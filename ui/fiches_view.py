@@ -11,7 +11,7 @@ class FichesViewPage(ttk.Frame):
 
         ttk.Label(
             self,
-            text="Gestion des fiches et paquets",
+            text="Gestion des fiches et decks",
             font=("Segoe UI", 16, "bold")
         ).pack(pady=30)
 
@@ -29,13 +29,13 @@ class FichesViewPage(ttk.Frame):
         
         ttk.Button(
             self,
-            text="➕ Ajouter un paquet",
+            text="Ajouter un deck",
             command=lambda: controller.show_page("AddPaquet")
         ).pack(pady=10, ipadx=10, ipady=5)
 
         ttk.Button(
             self,
-            text="Gérer les paquets",
+            text="Gérer les decks",
             command=lambda: self.open_paquets_list()
         ).pack(pady=10, ipadx=10, ipady=5)
 
@@ -53,7 +53,7 @@ class FichesViewPage(ttk.Frame):
         self.controller.show_page("FormList")
 
     def open_paquets_list(self):
-        # Recharger et afficher depuis la DB (pour avoir les nouveaux paquets)
+        # Recharger et afficher depuis la DB (pour avoir les nouveaux decks)
         self.forms_manager.charger_decks_depuis_db()
 
         page = self.controller.pages["DeckList"]

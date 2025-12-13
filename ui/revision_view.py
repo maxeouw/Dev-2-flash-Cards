@@ -62,14 +62,14 @@ class RevisionPage(ttk.Frame):
         decks = self.forms_manager.tous_les_decks()
 
         if not decks:
-            messagebox.showinfo("Info", "Aucun paquet n'a été créé.")
+            messagebox.showinfo("Info", "Aucun deck n'a été créé.")
             return
 
         # fenêtre popup
         top = Toplevel(self)
         top.title("Choisir un thème")
         top.geometry("400x300")
-        ttk.Label(top, text="Double-cliquez sur un paquet pour le réviser :").pack(pady=10)
+        ttk.Label(top, text="Double-cliquez sur un deck pour le réviser :").pack(pady=10)
 
         # Liste des decks
         columns = ("id", "nom", "nb")

@@ -10,7 +10,7 @@ class DeckDetailPage(ttk.Frame):
         self.deck = None  # deck actuellement affiché
 
         self.title_label = ttk.Label(
-            self, text="Détails du paquet", font=("Segoe UI", 16, "bold")
+            self, text="Détails du deck", font=("Segoe UI", 16, "bold")
         )
         self.title_label.pack(pady=20)
 
@@ -29,7 +29,7 @@ class DeckDetailPage(ttk.Frame):
         self.nb_label.pack(pady=10)
 
         # --- Boutons purement UI (non fonctionnels pour l'instant) ---
-        ttk.Button(self, text="Supprimer le paquet").pack(pady=10)
+        ttk.Button(self, text="Supprimer le deck").pack(pady=10)
         ttk.Button(self, text="Lier une fiche",command=self.ouvrir_fenetre_selection).pack(pady=10)
 
         # --- Retour ---
@@ -52,7 +52,7 @@ class DeckDetailPage(ttk.Frame):
 
         self.deck = deck
 
-        self.title_label.config(text=f"Paquet #{deck.id}")
+        self.title_label.config(text=f"deck #{deck.id}")
         self.nom_var.set(deck.nom)                      # ← Remplace le label par un Entry éditable
         self.nb_label.config(text=f"Nombre de fiches : {len(deck.fiche_ids)}")
 
@@ -64,7 +64,7 @@ class DeckDetailPage(ttk.Frame):
 
         # Pop-up
         top = Toplevel(self)
-        top.title(f"Ajouter au paquet : {self.deck.nom}")
+        top.title(f"Ajouter au deck : {self.deck.nom}")
         top.geometry("600x400")
 
         ttk.Label(top, text="Double-cliquez sur une fiche pour l'ajouter").pack(pady=10)
@@ -98,7 +98,7 @@ class DeckDetailPage(ttk.Frame):
         succes = self.forms_manager.ajouter_fiche_a_deck(self.deck.id, fiche_id)
 
         if succes:
-            messagebox.showinfo("Succès", "Fiche ajoutée au paquet !")
+            messagebox.showinfo("Succès", "Fiche ajoutée au deck !")
             self.nb_label.config(text=f"Nombre de fiches : {len(self.deck.fiche_ids)}")
             window.destroy()
         else:

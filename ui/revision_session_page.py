@@ -85,26 +85,26 @@ class RevisionSessionPage(ttk.Frame):
 
     def valider_reponse(self):
         fiche = self.fiches[self.current_index]
-
         user_answer = self.reponse_entry.get()
 
-        # Comparaison intelligente (espace et casse ignorés)
+        # Normaliser la réponse de l'utilisateur
         reponse_clean = user_answer.strip().lower()
-        attendue_clean = fiche.reponse.strip().lower()
 
-        if reponse_clean == attendue_clean:
-            self.resultat_reussite = True
+        # Vérifier si elle correspond à une des réponses enregistrées
+        self.resultat_reussite = False
+        for reponse_attendue in fiche.reponses:  
+            if reponse_clean == reponse_attendue.strip().lower():
+                self.resultat_reussite = True
+                break
+
+        if self.resultat_reussite:
             self.feedback_label.config(text="✅ VRAI", foreground="green")
             self.reponse_correcte_label.config(text="Bravo !")
         else:
-            self.resultat_reussite = False
             self.feedback_label.config(text="❌ FAUX", foreground="red")
-            self.reponse_correcte_label.config(text=f"Réponse correcte : {fiche.reponse}")
-
-        # Affiche la réponse correcte
-        self.reponse_correcte_label.config(
-            text=f"Réponse correcte : {fiche.reponse}"
-        )
+            # Afficher TOUTES les réponses possibles
+            reponses_text = " ou ".join(fiche.reponses)
+            self.reponse_correcte_label.config(text=f"Réponse correcte : {reponses_text}")
 
         # Mise à jour simple de la révision
         fiche.niveau += 1

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 from datetime import datetime
 from core.models import Form, Deck
 from typing import List, Optional
@@ -28,14 +28,14 @@ class FormsManager:
     def create_form(
         self,
         question: str,
-        reponse: str,
+        reponse: Union[str, List[str]],
         tags: Optional[List[str]] = None
     ) -> Form:
-        """Créer une fiche Question/Réponse."""
+        """Créer une fiche Question/Réponse(s)."""
         fiche = Form(
             id=self._next_id,
             question=question,
-            reponse=reponse,
+            reponses=[reponse] if isinstance(reponse, str) else reponse,  
             tags=tags if tags else [],
         )
 
@@ -45,6 +45,7 @@ class FormsManager:
         self.fiches.append(fiche)
         self._next_id += 1
         return fiche
+
 
     def delete_form(self, fiche_id: int) -> bool:
         """Supprime une fiche de la liste ET de la DB."""

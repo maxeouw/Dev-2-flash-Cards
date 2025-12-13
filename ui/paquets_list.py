@@ -11,16 +11,16 @@ class ManagePaquetsPage(ttk.Frame):
 
         ttk.Label(
             self,
-            text="Liste des paquets",
+            text="Liste des decks",
             font=("Segoe UI", 16, "bold")
         ).pack(pady=20)
 
-        # --- TABLEAU DES PAQUETS ---
+        # --- TABLEAU DES DECKS ---
         columns = ("id", "nom", "nb_fiches")
 
         self.tree = ttk.Treeview(self, columns=columns, show="headings", height=15)
         self.tree.heading("id", text="ID")
-        self.tree.heading("nom", text="Nom du paquet")
+        self.tree.heading("nom", text="Nom du deck")
         self.tree.heading("nb_fiches", text="Nombre de fiches")
 
         self.tree.column("id", width=40, anchor="center")
