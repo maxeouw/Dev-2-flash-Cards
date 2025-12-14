@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox
 from datetime import datetime
 
 class RevisionSessionPage(ttk.Frame):
-    def __init__(self, parent, controller, forms_manager):
+    def __init__(self, parent, controller, forms_manager, audio_manager=None):
         super().__init__(parent)
 
         self.controller = controller
@@ -11,6 +11,8 @@ class RevisionSessionPage(ttk.Frame):
         self.fiches = []
         self.current_index = 0
         self.deck_id_filter = None  # ID deck à réviser (None = tous)
+        self.audio_manager = audio_manager
+        self.widgets_nav = []
 
         ttk.Label(
             self,
@@ -25,6 +27,7 @@ class RevisionSessionPage(ttk.Frame):
         # Champ de réponse de l'utilisateur
         self.reponse_entry = ttk.Entry(self, width=50)
         self.reponse_entry.pack(pady=10)
+        self.reponse_entry.bind("<Return>", lambda event: self.question_suivante() if str(self.suivant_btn['state']) == 'normal' else self.valider_reponse())
         self.reponse_entry.bind("<Return>", lambda event: self.question_suivante() if str(self.suivant_btn['state']) == 'normal' else self.valider_reponse())
 
         # Champ VRAI / FAUX
@@ -49,6 +52,10 @@ class RevisionSessionPage(ttk.Frame):
             text="Retour",
             command=lambda: controller.show_page("Revision")
         ).pack(pady=20)
+
+        # Raccourcis clavier
+        self.valider_btn.bind("<Up>", lambda e: self.audio_manager.parler("Bouton valider") if self.audio_manager else None)
+        self.suivant_btn.bind("<Up>", lambda e: self.audio_manager.parler("Bouton suivant") if self.audio_manager else None)
 
     # -----------------------------------------------------------------------
 
@@ -76,11 +83,17 @@ class RevisionSessionPage(ttk.Frame):
         fiche = self.fiches[self.current_index]
 
         self.question_label.config(text=f"Question : {fiche.question}")
+        if self.audio_manager:
+            self.audio_manager.parler(f"Question {self.current_index + 1} : {fiche.question}")
+
         self.reponse_entry.delete(0, tk.END)
         self.reponse_correcte_label.config(text="")
         self.suivant_btn.config(state="disabled")
         self.valider_btn.config(state="normal")
         self.feedback_label.config(text="")
+        self.reponse_entry.focus_set()
+        if self.audio_manager:
+            self.audio_manager.parler("Zone de saisie active")
     # -----------------------------------------------------------------------
 
     def valider_reponse(self):
@@ -98,9 +111,11 @@ class RevisionSessionPage(ttk.Frame):
                 break
 
         if self.resultat_reussite:
+            self.audio_manager.parler("Réponse validée")
             self.feedback_label.config(text="✅ VRAI", foreground="green")
             self.reponse_correcte_label.config(text="Bravo !")
         else:
+            self.audio_manager.parler("Réponse incorrecte")
             self.feedback_label.config(text="❌ FAUX", foreground="red")
             # Afficher TOUTES les réponses possibles
             reponses_text = " ou ".join(fiche.reponses)

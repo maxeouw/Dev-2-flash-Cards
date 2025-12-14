@@ -66,7 +66,7 @@ class MainWindow(tk.Tk):
         self.pages["AddForm"].grid(row=0, column=0, sticky="nsew")
 
         #Page de lancement de revision
-        self.pages["Revision"] = RevisionPage(self.page_container, self, self.forms_manager)
+        self.pages["Revision"] = RevisionPage(self.page_container, self, self.forms_manager, self.audio_manager)
         self.pages["Revision"].grid(row=0, column=0, sticky="nsew")
 
         #Page d'ajout de decks
@@ -86,7 +86,7 @@ class MainWindow(tk.Tk):
         self.pages["DeckList"].grid(row=0, column=0, sticky="nsew")
 
         #Page de révision
-        self.pages["RevisionSession"] = RevisionSessionPage(self.page_container, self, self.forms_manager)
+        self.pages["RevisionSession"] = RevisionSessionPage(self.page_container, self, self.forms_manager, self.audio_manager)
         self.pages["RevisionSession"].grid(row=0, column=0, sticky="nsew")
 
         #Page de gestion des decks
@@ -106,6 +106,8 @@ class MainWindow(tk.Tk):
         # Focus sur le 1er bouton de la page d'accueil (mode d'accesibilité)
         if name == "MainMenu" and hasattr(page, "focus_first_button"):
             page.focus_first_button()
+        if name == "Revision" and hasattr(page, "focus_button_if_enabled"):
+            page.focus_button_if_enabled()
         page.tkraise()
 
 
@@ -154,6 +156,9 @@ class MainMenuPage(ttk.Frame):
             command=self.toggle_mode
         )
         self.checkbox.pack(side="left", padx=5)
+        self.checkbox.bind("<space>", lambda e: self.dire("Case à cocher Mode Accessibilité", stop_action=True))
+        self.checkbox.bind("<Right>", lambda e: self.action_droite(lambda: self.checkbox.invoke()))
+        self.checkbox.bind("<FocusIn>", lambda e: self.dire("Case à cocher Mode Accessibilité"))
         self.status_label = ttk.Label(toggle_frame, text="(désactivé)", foreground="#666")
         self.status_label.pack(side="left", padx=5)
         
@@ -193,6 +198,10 @@ class MainMenuPage(ttk.Frame):
                 self.audio_manager.parler("Mode accessibilité activé.")
             self.focus_first_button()
         else:
+            if self.audio_manager:
+                self.audio_manager.set_actif(True)
+                self.audio_manager.parler("Mode accessibilité désactivé.")
+                self.audio_manager.set_actif(False)
             self.status_label.config(text="(désactivé)", foreground="#666")
 
     # Ajout d'un bouton stylisé
@@ -203,20 +212,26 @@ class MainMenuPage(ttk.Frame):
         btn.bind("<FocusIn>", lambda e: self.dire(text))
         btn.bind("<Right>", lambda e: self.action_droite(command))
         btn.bind("<Left>", lambda e: self.action_gauche())
-
+        btn.bind("<space>", lambda e: self.repeter_selection(text))
         self.boutons_menu.append(btn)
 
     def setup_navigation(self):
-        total = len(self.boutons_menu)
-        for i, btn in enumerate(self.boutons_menu):
-            prev = self.boutons_menu[i - 1]
-            next_btn = self.boutons_menu[(i + 1) % total]
+        tous_les_elements = [self.checkbox] + self.boutons_menu
+        total = len(tous_les_elements)
+        for i, btn in enumerate(tous_les_elements):
+            prev = tous_les_elements[i - 1]
+            next_btn = tous_les_elements[(i + 1) % total]
 
             btn.bind("<Up>", lambda e, b=prev: self.naviguer_vers(b))
             btn.bind("<Down>", lambda e, b=next_btn: self.naviguer_vers(b))
 
     # FCT ne font rien si mode désactivé
     
+    def repeter_selection(self, text):
+        if self.mode_actif:
+            self.dire(text)
+            return "break"
+        
     def naviguer_vers(self, widget_cible):
         if self.mode_actif:
             widget_cible.focus_set()

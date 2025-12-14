@@ -2,11 +2,14 @@ import tkinter as tk
 from tkinter import ttk, messagebox, Toplevel
 
 class RevisionPage(ttk.Frame):
-    def __init__(self, parent, controller, forms_manager):
+    def __init__(self, parent, controller, forms_manager, audio_manager=None):
         super().__init__(parent)
 
         self.controller = controller
         self.forms_manager = forms_manager
+        self.audio_manager = audio_manager
+        self.widget_nav = []
+        self.buttons = []
 
         ttk.Label(self, text="Révision", font=("Segoe UI", 16, "bold")).pack(pady=20)
 
@@ -26,6 +29,19 @@ class RevisionPage(ttk.Frame):
             text="Retour",
             command=lambda: controller.show_page("MainMenu")
         ).pack(pady=10)
+
+# Accessibilité complète
+        if audio_manager:
+            self.buttons = audio_manager.setup_full_accessibility(self, controller, "MainMenu")
+            self.after(100, self.focus_button_if_enabled)
+
+    def focus_button_if_enabled(self):
+        if self.buttons:
+            main_menu = self.controller.pages.get("MainMenu")
+            if main_menu and hasattr(main_menu, 'mode_actif') and main_menu.mode_actif:
+                self.buttons[0].focus_set()
+                if self.audio_manager:
+                    self.audio_manager.parler(f"Bouton : {self.buttons[0]['text']}")
 
     def start_revision_console(self):
         fiches = self.forms_manager.toutes_les_fiches()
@@ -69,7 +85,11 @@ class RevisionPage(ttk.Frame):
         top = Toplevel(self)
         top.title("Choisir un thème")
         top.geometry("400x300")
-        ttk.Label(top, text="Double-cliquez sur un deck pour le réviser :").pack(pady=10)
+# msg audio à l'ouverture
+        if self.audio_manager:
+            self.audio_manager.parler("Choisissez un thème dans la liste")
+
+        ttk.Label(top, text="Double-cliquez (ou Entrée) sur un deck :").pack(pady=10)
 
         # Liste des decks
         columns = ("id", "nom", "nb")
@@ -87,7 +107,19 @@ class RevisionPage(ttk.Frame):
         for deck in decks:
             tree.insert("", "end", values=(deck.id, deck.nom, len(deck.fiche_ids)))
 
-        tree.bind("<Double-1>", lambda e: self.lancer_revision_deck(tree, top))
+# --- MODIFICATIONS ACCESSIBILITÉ ---
+        
+        tree.bind("<<TreeviewSelect>>", lambda e: self.speak_deck_selection(tree))        
+
+        valider = lambda e: self.lancer_revision_deck(tree, top)
+        tree.bind("<Double-1>", valider)
+        tree.bind("<Return>", valider)
+
+        tree.focus_set()
+        if tree.get_children():
+            first_item = tree.get_children()[0]
+            tree.selection_set(first_item)
+            tree.focus(first_item)
 
     def lancer_revision_deck(self, tree, window):
         """Config session avec le deck choisi"""
@@ -105,3 +137,19 @@ class RevisionPage(ttk.Frame):
         session_page.deck_id_filter = deck_id
 
         self.controller.show_page("RevisionSession")
+
+    def speak_deck_selection(self, tree):
+        """Lit le nom du deck sélectionné."""
+        if not self.audio_manager:
+            return
+
+        selection = tree.selection()
+        if not selection:
+            return
+
+        item = selection[0]
+        values = tree.item(item, "values")
+        nom_deck = values[1]
+        nb_fiches = values[2]
+
+        self.audio_manager.parler(f"{nom_deck}, {nb_fiches} fiches")
