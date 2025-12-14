@@ -114,6 +114,7 @@ class RevisionPage(ttk.Frame):
         valider = lambda e: self.lancer_revision_deck(tree, top)
         tree.bind("<Double-1>", valider)
         tree.bind("<Return>", valider)
+        tree.bind("<Right>", valider)
 
         tree.focus_set()
         if tree.get_children():

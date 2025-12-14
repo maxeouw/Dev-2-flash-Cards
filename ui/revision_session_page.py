@@ -93,7 +93,7 @@ class RevisionSessionPage(ttk.Frame):
         self.feedback_label.config(text="")
         self.reponse_entry.focus_set()
         if self.audio_manager:
-            self.audio_manager.parler("Zone de saisie active")
+            self.after(2500, lambda: self.audio_manager.parler("Zone de saisie active"))
     # -----------------------------------------------------------------------
 
     def valider_reponse(self):
@@ -109,17 +109,18 @@ class RevisionSessionPage(ttk.Frame):
             if reponse_clean == reponse_attendue.strip().lower():
                 self.resultat_reussite = True
                 break
+            reponses_text = " ou ".join(fiche.reponses)
 
         if self.resultat_reussite:
             self.audio_manager.parler("Réponse validée")
             self.feedback_label.config(text="✅ VRAI", foreground="green")
             self.reponse_correcte_label.config(text="Bravo !")
         else:
-            self.audio_manager.parler("Réponse incorrecte")
+            self.audio_manager.parler(f"Réponse incorrecte. {reponses_text}")
             self.feedback_label.config(text="❌ FAUX", foreground="red")
             # Afficher TOUTES les réponses possibles
             reponses_text = " ou ".join(fiche.reponses)
-            self.reponse_correcte_label.config(text=f"Réponse correcte : {reponses_text}")
+            self.reponse_correcte_label.config(text=f"Réponse incorrecte : {reponses_text}")
 
         # Mise à jour simple de la révision
         fiche.niveau += 1
