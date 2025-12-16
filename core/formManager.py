@@ -55,6 +55,7 @@ class FormsManager:
             - a string
             - a non-empty list of string
         - tags is initiated to None and could be a list of string
+        - self._next_id must be over zero
         - self.storage is initialized
 
         POST:
@@ -79,18 +80,7 @@ class FormsManager:
 
 
     def delete_form(self, fiche_id: int) -> bool:
-        """
-        Deletes a card from the list of cards and the DB.
-        
-        PRE:
-        - fiche_id must be an integer
-        - fiches must be a list of cards
-        - The delete_form_from_db method must be accessible
-
-        POST:
-        - If the selected card id is present in the list of cards, it must be removed from the list of cards and the DB
-        - If the selected card id is not present in the list of cards then nothing happens and the method returns False 
-        """
+        """Supprime une fiche de la liste ET de la DB."""
         for fiche in self.fiches:
             if fiche.id == fiche_id:
                 self.fiches.remove(fiche)
@@ -205,10 +195,9 @@ class FormsManager:
         fiches_du_deck = [f for f in self.fiches if f.id in deck.fiche_ids]
         
         return fiches_du_deck
+
 """
 class SpacesRepetitionEngine:
-
-class StorageManager
 
 class StatsManager
 
