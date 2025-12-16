@@ -14,6 +14,12 @@ class RevisionSessionPage(ttk.Frame):
         self.audio_manager = audio_manager
         self.widgets_nav = []
 
+
+        #ici cest pour les stats
+        self.session_total_cards = 0
+        self.session_failed_cards = 0
+        self.current_deck_id = None
+        
         ttk.Label(
             self,
             text="Session de révision",
@@ -62,20 +68,27 @@ class RevisionSessionPage(ttk.Frame):
     def start_session(self):
         """Lancée automatiquement quand on arrive sur la page."""
         if self.deck_id_filter is not None:
-            # Si filtre actif, on charge uniquement ce deck
+             # Si filtre actif, on charge uniquement ce deck
             self.fiches = self.forms_manager.get_fiches_by_deck_id(self.deck_id_filter)
-            self.deck_id_filter = None # IMPORTANT: reset après usage (pour avoir toutes les fiches en mode "tout étudier")
+            self.current_deck_id = self.deck_id_filter   # NEW
+            self.deck_id_filter = None  # reset
         else:
             # Par défaut tout étudier
             self.fiches = self.forms_manager.toutes_les_fiches()
+            self.current_deck_id = None  # signifie "tous les decks"
 
         if not self.fiches:
             messagebox.showinfo("Révision", "Aucune fiche à réviser.")
             self.controller.show_page("RevisionPage")
             return
 
+        # NEW: init session counters
+        self.session_total_cards = len(self.fiches)
+        self.session_failed_cards = 0
+
         self.current_index = 0
         self.afficher_question()
+
 
     # -----------------------------------------------------------------------
 
@@ -118,10 +131,12 @@ class RevisionSessionPage(ttk.Frame):
         else:
             self.audio_manager.parler(f"Réponse incorrecte. {reponses_text}")
             self.feedback_label.config(text="❌ FAUX", foreground="red")
+            #ici pour stats +1 par faux
+            self.session_failed_cards += 1
             # Afficher TOUTES les réponses possibles
             reponses_text = " ou ".join(fiche.reponses)
             self.reponse_correcte_label.config(text=f"Réponse incorrecte : {reponses_text}")
-
+            
         # Mise à jour simple de la révision
         fiche.niveau += 1
         fiche.intervalle = max(1, fiche.intervalle + 1)
@@ -137,8 +152,26 @@ class RevisionSessionPage(ttk.Frame):
         self.current_index += 1
 
         if self.current_index >= len(self.fiches):
+            # Fin de session : enregistrer les stats
+            self._sauvegarder_stats_session()
             #messagebox.showinfo("Révision", "Révision terminée !")
             self.controller.show_page("Revision")
             return
 
         self.afficher_question()
+    def _sauvegarder_stats_session(self):
+        """
+        Appelée uniquement quand la session est allée jusqu'au bout.
+        """
+        try:
+            total = self.session_total_cards
+            fails = self.session_failed_cards
+            deck_id = self.current_deck_id
+
+            # StorageManager is in main_window: MainWindow.storage_manager
+            # FormsManager already has a reference to it as self.storage
+            storage = self.forms_manager.storage
+            storage.add_stats_session(deck_id, total, fails)
+        except Exception as e:
+            print("Erreur lors de la sauvegarde des stats :", e)
+
