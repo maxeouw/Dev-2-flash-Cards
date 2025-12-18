@@ -155,7 +155,12 @@ class RevisionSessionPage(ttk.Frame):
             # Fin de session : enregistrer les stats
             self._sauvegarder_stats_session()
             #messagebox.showinfo("Révision", "Révision terminée !")
-            self.controller.show_page("Revision")
+            # Quand le mode audio est actif, on attend avant de changer de page
+            if self.audio_manager and self.audio_manager.actif:
+                self.audio_manager.parler("Révision terminée")
+                self.after(2000, lambda: self.controller.show_page("Revision"))
+            else:
+                self.controller.show_page("Revision")
             return
 
         self.afficher_question()

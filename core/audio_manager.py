@@ -7,7 +7,7 @@ class AudioManager:
         self.lock = threading.Lock()
         self.current_msg_id = 0
         self._actif = False
-        self._rate = 150     # Vitesse de la parole
+        self._rate = 175     # Vitesse de la parole
 
     @property
     def rate(self) -> int:
