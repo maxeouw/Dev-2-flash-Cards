@@ -13,7 +13,7 @@ class Form:
     intervalle: int = 1
     niveau: int = 0
     media: List[str] = field(default_factory=list)
-    reponses: List[str] = field(default_factory=list)  # ✅ C'est l'attribut principal
+    reponses: List[str] = field(default_factory=list)  
 
     @property
     def titre(self) -> str:

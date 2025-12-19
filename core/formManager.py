@@ -5,6 +5,11 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from core.storage import StorageManager
 
+
+class DeckCreationError(Exception):
+    """Exception levée lorsqu'un deck ne peut pas être créé"""
+    pass
+
 class DeckNotFoundError(Exception):
     "Exception raised if a deck is not found"
     pass
@@ -107,19 +112,31 @@ class FormsManager:
         return None
 
     def create_deck(self, nom: str) -> Deck:
-        """Créer un nouveau deck (sans DB pour l'instant)."""
+        """
+        Crée un nouveau deck.
+        
+        PRE: 'nom' doit être une chaîne non vide et non constituée uniquement d'espaces.
+        POST: Retourne un nouvel objet Deck avec un ID unique, ajouté à la liste 'self.decks'.
+        RAISE: DeckCreationError si le nom est vide ou invalide.
+        """
+        # Vérification (PRE)
+        if not nom or not nom.strip():
+            # Levée de l'exception (RAISE)
+            raise DeckCreationError("Le nom du deck ne peut pas être vide.")
+
+        # Logique métier
         deck = Deck(
-            id=self.next_deck_id,
-            nom=nom
+            id=self.next_deck_id, 
+            nom=nom.strip()
         )
         db_id = self.storage.add_deck_to_db(deck)
         deck.id = db_id
+        
         self.decks.append(deck)
-        self.next_deck_id += 1
+        self.next_deck_id += 1 
+        
+        # Le résultat est renvoyé (POST)
         return deck
-    # ----------------------------------------------------------
-    # Recherche
-    # ----------------------------------------------------------
 
     def rechercher(self, mot_clef: str) -> List[Form]:
         mot_clef = mot_clef.lower()
