@@ -13,7 +13,7 @@ from ui.revision_session_page import RevisionSessionPage
 from ui.edit_decks_page import DeckDetailPage
 from core.audio_manager import AudioManager
 from ui.stats_page import StatsPage
-
+from ui.end_session_page import EndOfSessionPage
 class MainWindow(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -95,6 +95,9 @@ class MainWindow(tk.Tk):
         #pages de stqts
         self.pages["Stats"] = StatsPage(self.page_container, self, self.storage_manager, self.forms_manager)
         self.pages["Stats"].grid(row=0, column=0, sticky="nsew")
+        # Page de fin de session
+        self.pages["EndSession"] = EndOfSessionPage(self.page_container, self, self.forms_manager)
+        self.pages["EndSession"].grid(row=0, column=0, sticky="nsew")
 
     # ---------------------------------------------------------
     # Affichage d'une page
