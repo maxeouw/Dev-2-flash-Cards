@@ -6,13 +6,38 @@ class AudioManager:
     def __init__(self):
         self.lock = threading.Lock()
         self.current_msg_id = 0
-        self.actif = False
+        self._actif = False
+        self._rate = 175     # Vitesse de la parole
+
+    @property
+    def rate(self) -> int:
+        """Getter : récupère la vitesse de parole."""
+        return self._rate
+
+    @rate.setter
+    def rate(self, vitesse: int) -> None:
+        """Setter : change la vitesse avec validation (50-300)."""
+        if not 50 <= vitesse <= 300:
+            raise ValueError("La vitesse doit être entre 50 et 300")
+        self._rate = vitesse
+
+    @property
+    def actif(self) -> bool:
+        """Getter : récupère l'état du mode accessibilité."""
+        return self._actif
+
+    @actif.setter
+    def actif(self, etat: bool) -> None:
+        """Setter : change l'état du mode accessibilité avec validation."""
+        if not isinstance(etat, bool):
+            raise ValueError("L'état doit être un booléen (True/False)")
+        self._actif = etat
 
     def set_actif(self, etat: bool):
-        self.actif = etat
+        self.actif = etat   # setter appelé
 
     def parler(self, texte):
-        if not self.actif:
+        if not self.actif:  # getter appelé
             return
         self.current_msg_id += 1
         this_msg_id = self.current_msg_id 
@@ -29,7 +54,7 @@ class AudioManager:
 
             try:
                 engine = pyttsx3.init()
-                engine.setProperty('rate', 150)
+                engine.setProperty('rate', self.rate) # getter
                 
                 engine.say(texte)
                 engine.runAndWait()

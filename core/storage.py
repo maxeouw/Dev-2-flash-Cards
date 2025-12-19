@@ -61,6 +61,17 @@ class StorageManager:
                     FOREIGN KEY(card_id) REFERENCES carte(id)
                 )
             """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS stats_revision (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    deck_id INTEGER,              -- NULL = all decks / "review all"
+                    date_session TEXT NOT NULL,   -- ISO format
+                    total_cards INTEGER NOT NULL,
+                    failed_cards INTEGER NOT NULL,
+                    success_rate REAL NOT NULL,   -- between 0 and 100
+                    FOREIGN KEY(deck_id) REFERENCES categorie(id)
+                )
+            """)
             db.commit()
 
     def add_form_to_db(self, form: Form) -> int:
@@ -193,3 +204,58 @@ class StorageManager:
                 VALUES (?, ?)
             """, (deck_id, card_id))
             db.commit()
+    def add_stats_session(self, deck_id, total_cards, failed_cards) -> int:
+        if total_cards <= 0:
+            return 0
+        success_rate = (total_cards - failed_cards) / total_cards * 100.0
+        date_session = datetime.now().isoformat()
+
+        with sqlite3.connect(self.db_path) as db:
+            cursor = db.cursor()
+            cursor.execute(
+                """
+                INSERT INTO stats_revision
+                    (deck_id, date_session, total_cards, failed_cards, success_rate)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (deck_id, date_session, total_cards, failed_cards, success_rate),
+            )
+            db.commit()
+            return cursor.lastrowid
+
+    def load_stats_for_deck(self, deck_id=None):
+        with sqlite3.connect(self.db_path) as db:
+            cursor = db.cursor()
+        if deck_id is None:
+            cursor.execute(
+                """
+                SELECT deck_id, date_session, total_cards, failed_cards, success_rate
+                FROM stats_revision
+                ORDER BY date_session ASC
+                """
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT deck_id, date_session, total_cards, failed_cards, success_rate
+                FROM stats_revision
+                WHERE deck_id = ?
+                ORDER BY date_session ASC
+                """,
+                (deck_id,),
+            )
+        rows = cursor.fetchall()
+
+        stats = []
+        for deck_id_val, date_session, total, failed, success in rows:
+            stats.append(
+                {
+                    "deck_id": deck_id_val,
+                    "date_session": date_session,
+                    "total_cards": total,
+                    "failed_cards": failed,
+                    "success_rate": success,
+                }
+            )
+        return stats
+

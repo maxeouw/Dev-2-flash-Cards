@@ -12,7 +12,7 @@ from ui.paquets_list import ManagePaquetsPage
 from ui.revision_session_page import RevisionSessionPage
 from ui.edit_decks_page import DeckDetailPage
 from core.audio_manager import AudioManager
-
+from ui.stats_page import StatsPage
 
 class MainWindow(tk.Tk):
     def __init__(self):
@@ -92,6 +92,9 @@ class MainWindow(tk.Tk):
         #Page de gestion des decks
         self.pages["deckGestion"] = DeckDetailPage(self.page_container, self, self.forms_manager)
         self.pages["deckGestion"].grid(row=0, column=0, sticky="nsew")
+        #pages de stqts
+        self.pages["Stats"] = StatsPage(self.page_container, self, self.storage_manager, self.forms_manager)
+        self.pages["Stats"].grid(row=0, column=0, sticky="nsew")
 
     # ---------------------------------------------------------
     # Affichage d'une page
@@ -171,7 +174,7 @@ class MainMenuPage(ttk.Frame):
         self.add_btn(menu_frame, "Commencer une révision",
                      lambda: controller.show_page("Revision"))
         self.add_btn(menu_frame, "Tableau de bord",
-                     lambda: messagebox.showinfo("Dashboard", "À implémenter"))
+                    lambda: controller.show_page("Stats"))
         self.add_btn(menu_frame, "Quitter", controller.quit)
 
         # Activation nav clavier

@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from core.formManager import DeckCreationError
+
 
 
 class AddPaquetPage(ttk.Frame):
@@ -37,13 +39,20 @@ class AddPaquetPage(ttk.Frame):
             command=lambda: controller.show_page("FichesView")
         ).pack(side="left", padx=10, ipadx=10, ipady=5)
 
+
+
     def creer_deck(self, event=None):
-        nom = self.nom_deck_entry.get().strip()
+        nom = self.nom_deck_entry.get() 
 
-        if not nom:
-            messagebox.showerror("Erreur", "Le nom du deck est obligatoire.")
-            return
+        try:
+            # On tente de créer le deck
+            deck = self.forms_manager.create_deck(nom)
+            
+            # Si succès (POST effectif dans l'UI)
+            self.nom_deck_entry.delete(0, "end")
+            messagebox.showinfo("Succès", f"Le deck '{deck.nom}' a bien été créé !")
+            
+        except DeckCreationError as e:
+            # On attrape l'exception pour ne pas faire crasher l'app
+            messagebox.showerror("Erreur de création", str(e))
 
-        deck = self.forms_manager.create_deck(nom)
-        
-        self.nom_deck_entry.delete(0, "end")
