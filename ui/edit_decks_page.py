@@ -3,11 +3,12 @@ from tkinter import ttk, messagebox, Toplevel
 from core.formManager import DeckNotFoundError
 
 class DeckDetailPage(ttk.Frame):
-    def __init__(self, parent, controller, forms_manager):
+    def __init__(self, parent, controller, forms_manager, audio_manager=None):
         super().__init__(parent)
 
         self.controller = controller
         self.forms_manager = forms_manager
+        self.audio_manager = audio_manager
         self.deck = None  # deck actuellement affiché
 
         self.title_label = ttk.Label(
@@ -40,6 +41,9 @@ class DeckDetailPage(ttk.Frame):
             command=lambda: controller.show_page("DeckList")
         ).pack(pady=20)
 
+        if self.audio_manager:
+            self.audio_manager.setup_full_accessibility(self, controller, "DeckList")
+
     # ------------------------------------------------------
     def charger_deck(self, deck_id: int):
         """Charge les infos dans l'UI (affichage uniquement)."""
@@ -57,6 +61,8 @@ class DeckDetailPage(ttk.Frame):
         self.nom_var.set(deck.nom)                      # ← Remplace le label par un Entry éditable
         self.nb_label.config(text=f"Nombre de fiches : {len(deck.fiche_ids)}")
 
+        if self.audio_manager:
+            self.audio_manager.parler(f"Détails du deck {deck.nom}")
 
     def ouvrir_fenetre_selection(self):
         """Ouvre une popup pour choisir une fiche."""
@@ -67,6 +73,9 @@ class DeckDetailPage(ttk.Frame):
         top = Toplevel(self)
         top.title(f"Ajouter au deck : {self.deck.nom}")
         top.geometry("600x400")
+
+        if self.audio_manager:
+            self.audio_manager.parler("Sélectionnez une fiche à ajouter. Flèche gauche pour annuler.")
 
         ttk.Label(top, text="Double-cliquez sur une fiche pour l'ajouter").pack(pady=10)
 
@@ -83,8 +92,20 @@ class DeckDetailPage(ttk.Frame):
             if f.id not in self.deck.fiche_ids:
                 tree.insert("", "end", values=(f.id, f.question))
 
-        # Double clic
-        tree.bind("<Double-1>", lambda e: self.valider_ajout(tree, top))
+        # Validation / Annulation
+        valider = lambda e: self.valider_ajout(tree, top)
+        tree.bind("<Double-1>", valider)
+        tree.bind("<Return>", valider)
+        tree.bind("<space>", valider)
+        tree.bind("<Right>", valider)
+        tree.bind("<Left>", lambda e: top.destroy())
+
+        # Focus au début
+        tree.focus_set()
+        if tree.get_children():
+            premier = tree.get_children()[0]
+            tree.selection_set(premier)
+            tree.focus(premier)
 
     def valider_ajout(self, tree, window):
         """Appelée quand on clique sur une fiche dans la popup."""
@@ -98,6 +119,9 @@ class DeckDetailPage(ttk.Frame):
 
         try:
             self.forms_manager.ajouter_fiche_a_deck(self.deck.id, fiche_id)
+
+            if self.audio_manager:
+                self.audio_manager.parler("Fiche ajoutée au deck")
 
             #messagebox.showinfo("Succès", "Fiche ajoutée au deck !")
             self.nb_label.config(

@@ -63,17 +63,90 @@ class AudioManager:
 
     def setup_full_accessibility(self, page, controller=None, back_page=None):
         buttons = []
-        for widget in page.winfo_children():
+        def find_buttons(widget):
             if isinstance(widget, ttk.Button):
                 buttons.append(widget)
+            for child in widget.winfo_children():
+                find_buttons(child)
+    
+        find_buttons(page)
 
         for i, btn in enumerate(buttons):
             btn.bind("<Up>", lambda e, b=buttons[i-1]: b.focus_set())
             btn.bind("<Down>", lambda e, b=buttons[(i+1) % len(buttons)]: b.focus_set())
             btn.bind("<FocusIn>", lambda e, text=btn['text']: self.parler(f"Bouton : {text}"))
             
-            if back_page and controller:
-                btn.bind("<Left>", lambda e: controller.show_page(back_page))
+            btn.bind("<Return>", lambda e, b=btn: b.invoke())
+            btn.bind("<space>", lambda e, b=btn: b.invoke())
             btn.bind("<Right>", lambda e, b=btn: b.invoke())
-
+         
+            if back_page and controller and "Retour" in btn['text']:
+                btn.bind("<Left>", lambda e: controller.show_page(back_page))
         return buttons
+
+    def setup_treeview_accessibility(self, treeview, speak_callback, validate_callback=None, back_callback=None):
+        if not self.actif:
+            return
+
+        def navigate_up(event):
+            selection = treeview.selection()
+            if not selection:
+                return
+
+            current = selection[0]
+            children = treeview.get_children()
+            try:
+                idx = children.index(current)
+                if idx > 0:
+                    new_idx = idx - 1
+                    treeview.selection_set(children[new_idx])
+                    treeview.see(children[new_idx])
+                    speak_callback(event)
+            except ValueError:
+                pass
+
+        def navigate_down(event):
+            selection = treeview.selection()
+            if not selection:
+                return
+
+            current = selection[0]
+            children = treeview.get_children()
+            try:
+                idx = children.index(current)
+                if idx < len(children) - 1:
+                    new_idx = idx + 1
+                    treeview.selection_set(children[new_idx])
+                    treeview.see(children[new_idx])
+                    speak_callback(event)
+            except ValueError:
+                pass
+
+        treeview.bind("<Up>", navigate_up)
+        treeview.bind("<Down>", navigate_down)
+        if validate_callback:
+            treeview.bind("<Right>", validate_callback)
+        if back_callback:
+            treeview.bind("<Left>", back_callback)
+        
+        # Focus sur le premier item
+        if treeview.get_children():
+            first_item = treeview.get_children()[0]
+            treeview.selection_set(first_item)
+            treeview.focus_set()
+            speak_callback(None)
+
+    def setup_form_buttons(self, buttons, controller=None, back_page=None):
+    
+        if not self.actif:
+            return
+        
+        for i, btn in enumerate(buttons):
+            btn.bind("<Tab>", lambda e, b=buttons[(i+1) % len(buttons)]: b.focus_set())
+            btn.bind("<shift-Tab>", lambda e, b=buttons[(i-1) % len(buttons)]: b.focus_set())
+            btn.bind("<Return>", lambda e, b=btn: b.invoke())
+            btn.bind("<space>", lambda e, b=btn: b.invoke())
+            btn.bind("<FocusIn>", lambda e, text=btn['text']: self.parler(f"Bouton : {text}"))
+        
+        if back_page and controller and buttons:
+            buttons[0].bind("<Escape>", lambda e: controller.show_page(back_page))

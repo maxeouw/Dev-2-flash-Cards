@@ -58,11 +58,11 @@ class MainWindow(tk.Tk):
         self.pages["MainMenu"].grid(row=0, column=0, sticky="nsew")
 
         # Page de gestion des fiches et des decks. 
-        self.pages["FichesView"] = FichesViewPage(self.page_container, self, self.forms_manager)
+        self.pages["FichesView"] = FichesViewPage(self.page_container, self, self.forms_manager, self.audio_manager)
         self.pages["FichesView"].grid(row=0, column=0, sticky="nsew")
 
         # Page fiches
-        self.pages["AddForm"] = AddFormPage(self.page_container, self, self.forms_manager)
+        self.pages["AddForm"] = AddFormPage(self.page_container, self, self.forms_manager, self.audio_manager)
         self.pages["AddForm"].grid(row=0, column=0, sticky="nsew")
 
         #Page de lancement de revision
@@ -70,11 +70,11 @@ class MainWindow(tk.Tk):
         self.pages["Revision"].grid(row=0, column=0, sticky="nsew")
 
         #Page d'ajout de decks
-        self.pages["AddPaquet"] = AddPaquetPage(self.page_container, self, self.forms_manager)
+        self.pages["AddPaquet"] = AddPaquetPage(self.page_container, self, self.forms_manager, self.audio_manager)
         self.pages["AddPaquet"].grid(row=0, column=0, sticky="nsew")
 
         #Page gestion des fiches
-        self.pages["FormList"] = ListeFichesPage(self.page_container,self, self.forms_manager)
+        self.pages["FormList"] = ListeFichesPage(self.page_container,self, self.forms_manager, self.audio_manager)
         self.pages["FormList"].grid(row=0, column=0, sticky="nsew")
 
         #Page édition des fiches
@@ -82,7 +82,7 @@ class MainWindow(tk.Tk):
         self.pages["EditForm"].grid(row=0, column=0, sticky="nsew")
 
         #Page de liste de decks
-        self.pages["DeckList"] = ManagePaquetsPage(self.page_container, self, self.forms_manager)
+        self.pages["DeckList"] = ManagePaquetsPage(self.page_container, self, self.forms_manager, self.audio_manager)
         self.pages["DeckList"].grid(row=0, column=0, sticky="nsew")
 
         #Page de révision
@@ -90,7 +90,7 @@ class MainWindow(tk.Tk):
         self.pages["RevisionSession"].grid(row=0, column=0, sticky="nsew")
 
         #Page de gestion des decks
-        self.pages["deckGestion"] = DeckDetailPage(self.page_container, self, self.forms_manager)
+        self.pages["deckGestion"] = DeckDetailPage(self.page_container, self, self.forms_manager, self.audio_manager)
         self.pages["deckGestion"].grid(row=0, column=0, sticky="nsew")
         #pages de stqts
         self.pages["Stats"] = StatsPage(self.page_container, self, self.storage_manager, self.forms_manager)
@@ -112,6 +112,16 @@ class MainWindow(tk.Tk):
         if name == "Revision" and hasattr(page, "focus_button_if_enabled"):
             page.focus_button_if_enabled()
         page.tkraise()
+
+        # Gest° focus accessibilité
+        accessibilite_active = self.audio_manager and self.audio_manager.actif
+
+        if accessibilite_active:
+            if hasattr(page, "focus_button_if_enabled"):
+                self.after(50, page.focus_button_if_enabled)
+            
+            elif hasattr(page, "focus_first_button"):
+                self.after(50, page.focus_first_button)
 
 
 # ---------------------------------------------------------

@@ -115,6 +115,7 @@ class RevisionPage(ttk.Frame):
         tree.bind("<Double-1>", valider)
         tree.bind("<Return>", valider)
         tree.bind("<Right>", valider)
+        tree.bind("<Left>", lambda e: top.destroy())
 
         tree.focus_set()
         if tree.get_children():

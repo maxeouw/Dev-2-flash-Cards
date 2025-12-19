@@ -3,11 +3,12 @@ from tkinter import ttk
 
 
 class ListeFichesPage(ttk.Frame):
-    def __init__(self, parent, controller, forms_manager):
+    def __init__(self, parent, controller, forms_manager, audio_manager=None):
         super().__init__(parent)
 
         self.controller = controller
         self.forms_manager = forms_manager
+        self.audio_manager = audio_manager
 
         ttk.Label(
             self,
@@ -33,11 +34,12 @@ class ListeFichesPage(ttk.Frame):
         self.tree.bind("<Double-1>", self.on_double_click)
 
         # --- Bouton retour ---
-        ttk.Button(
+        self.btn_retour = ttk.Button(
             self,
             text="Retour",
             command=lambda: controller.show_page("FichesView")
-        ).pack(pady=15)
+        )
+        self.btn_retour.pack(pady=15)
 
     # --------------------------------------------------
     def update_list(self):
@@ -53,6 +55,14 @@ class ListeFichesPage(ttk.Frame):
                 "end",
                 values=(fiche.id, fiche.question, fiche.reponse)
             )
+
+            if self.audio_manager:
+                self.audio_manager.setup_treeview_accessibility(
+                self.tree,
+                self.speak_selection,
+                validate_callback=lambda e: self.on_double_click(e),
+                back_callback=lambda e: self.btn_retour.invoke()
+                )
     # --------------------------------------------------
     def on_double_click(self, event):
         """Gère le double-clic sur une fiche."""
@@ -72,3 +82,12 @@ class ListeFichesPage(ttk.Frame):
         
         # Affiche la page d'édition
         self.controller.show_page("EditForm")
+
+    def speak_selection(self, event):
+        if not self.audio_manager or not self.audio_manager.actif: return
+        
+        selection = self.tree.selection()
+        if selection:
+            item = selection[0]
+            values = self.tree.item(item, "values")
+            self.audio_manager.parler(f"Fiche {values[0]} : {values[1]}")
