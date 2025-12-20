@@ -33,6 +33,16 @@ class ManagePaquetsPage(ttk.Frame):
         # --- Double-clic futur (ex: gérer contenu du deck) ---
         self.tree.bind("<Double-1>", self.on_double_click)
 
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(pady=15)
+        
+        # --- Ajouter un deck ---
+        ttk.Button(
+            btn_frame,
+            text="Ajouter un deck",
+            command=lambda: controller.show_page("AddPaquet")
+        ).pack(side="left", padx=10, ipadx=10, ipady=5)
+
         # --- Bouton Retour ---
         self.btn_retour = ttk.Button(
             self,

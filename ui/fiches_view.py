@@ -18,20 +18,8 @@ class FichesViewPage(ttk.Frame):
 
         ttk.Button(
             self,
-            text="Ajouter une fiche",
-            command=lambda: controller.show_page("AddForm")
-        ).pack(pady=10, ipadx=10, ipady=5)
-
-        ttk.Button(
-            self,
             text="Gérer les fiches",
             command=lambda: self.open_forms_list()
-        ).pack(pady=10, ipadx=10, ipady=5)
-        
-        ttk.Button(
-            self,
-            text="Ajouter un deck",
-            command=lambda: controller.show_page("AddPaquet")
         ).pack(pady=10, ipadx=10, ipady=5)
 
         ttk.Button(

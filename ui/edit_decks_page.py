@@ -35,6 +35,7 @@ class DeckDetailPage(ttk.Frame):
         ttk.Button(self, text="Supprimer le deck").pack(pady=10)
         ttk.Button(self, text="Lier une fiche",command=self.ouvrir_fenetre_selection).pack(pady=10)
 
+
         # --- Retour ---
         self.retour_btn = ttk.Button(
             self,

@@ -33,6 +33,10 @@ class ListeFichesPage(ttk.Frame):
         # --- Double-clic pour éditer ---
         self.tree.bind("<Double-1>", self.on_double_click)
 
+
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(pady=15)
+        
         # --- Bouton retour ---
         self.btn_retour = ttk.Button(
             self,
@@ -40,6 +44,14 @@ class ListeFichesPage(ttk.Frame):
             command=lambda: controller.show_page("FichesView")
         )
         self.btn_retour.pack(pady=15)
+
+        # --- Bouton Ajouter deck ---
+
+        ttk.Button(
+            btn_frame,
+            text="Ajouter une fiche",
+            command=lambda: controller.show_page("AddForm")
+        ).pack(side="left", padx=10, ipadx=10, ipady=5)
 
     # --------------------------------------------------
     def update_list(self):
