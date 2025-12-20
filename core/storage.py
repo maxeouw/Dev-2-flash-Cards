@@ -166,6 +166,28 @@ class StorageManager:
             """, (deck.nom,))
             db.commit()
             return cursor.lastrowid
+        
+
+    # --- supprime un deck de la db ---    
+    def delete_deck_from_db(self, deck_id: int) -> bool:
+        """Supprime un deck et ses liens carte↔deck dans la DB."""
+        with sqlite3.connect(self.db_path) as db:
+            cursor = db.cursor()
+
+            # Supprimer les liens entre ce deck et les cartes
+            cursor.execute(
+                "DELETE FROM lier_fiche_deck WHERE deck_id = ?",
+                (deck_id,)
+            )
+
+            # Supprimer le deck lui-même
+            cursor.execute(
+                "DELETE FROM categorie WHERE id = ?",
+                (deck_id,)
+            )
+
+            db.commit()
+            return cursor.rowcount > 0
 
     def load_all_decks(self):
         """Charge tous les decks depuis la DB."""

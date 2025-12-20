@@ -138,6 +138,25 @@ class FormsManager:
         # Le résultat est renvoyé (POST)
         return deck
 
+
+    # --- Supprimer un deck ---
+    def delete_deck(self, deck_id: int) -> bool:
+        """Supprime un deck de la liste ET de la DB."""
+        for deck in self.decks:
+            if deck.id == deck_id:
+                self.decks.remove(deck)
+
+                # Suppression en base de données
+                if hasattr(self.storage, "delete_deck_from_db"):
+                    self.storage.delete_deck_from_db(deck_id)
+                else:
+                    print("ERREUR : méthode delete_deck_from_db manquante dans StorageManager")
+
+                return True
+        raise DeckNotFoundError(f"Deck with id {deck_id} not found")
+
+
+
     def rechercher(self, mot_clef: str) -> List[Form]:
         mot_clef = mot_clef.lower()
         return [

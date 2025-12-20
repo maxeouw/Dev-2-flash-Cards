@@ -31,9 +31,19 @@ class DeckDetailPage(ttk.Frame):
         self.nb_label = ttk.Label(self, text="Nombre de fiches : 0", font=("Segoe UI", 12))
         self.nb_label.pack(pady=10)
 
-        # --- Boutons purement UI (non fonctionnels pour l'instant) ---
-        ttk.Button(self, text="Supprimer le deck").pack(pady=10)
-        ttk.Button(self, text="Lier une fiche",command=self.ouvrir_fenetre_selection).pack(pady=10)
+
+        # --- Boutons d'action ---
+        ttk.Button(
+            self,
+            text="Supprimer le deck",
+            command=self.supprimer_deck
+        ).pack(pady=10)
+
+        ttk.Button(
+            self,
+            text="Lier une fiche",
+            command=self.ouvrir_fenetre_selection
+        ).pack(pady=10)
 
 
         # --- Retour ---
@@ -72,7 +82,7 @@ class DeckDetailPage(ttk.Frame):
         self.deck = deck
 
         self.title_label.config(text=f"deck #{deck.id}")
-        self.nom_var.set(deck.nom)                      # ← Remplace le label par un Entry éditable
+        self.nom_var.set(deck.nom)                      
         self.nb_label.config(text=f"Nombre de fiches : {len(deck.fiche_ids)}")
 
         if self.audio_manager:
@@ -177,3 +187,40 @@ class DeckDetailPage(ttk.Frame):
         # values[0] = id, values[1] = question
         question = values[1]
         self.audio_manager.parler(f"Question : {question}")
+
+
+    def supprimer_deck(self):
+        """Supprime le deck courant après confirmation."""
+        if not self.deck:
+            messagebox.showerror("Erreur", "Aucun deck chargé.")
+            return
+
+        reponse = messagebox.askyesno(
+            "Confirmation",
+            f"Voulez-vous vraiment supprimer le deck '{self.deck.nom}' ?"
+        )
+        if not reponse:
+            return
+
+        try:
+            self.forms_manager.delete_deck(self.deck.id)
+
+            messagebox.showinfo("Succès", "Le deck a bien été supprimé.")
+            # Retour à la liste des decks
+            self.controller.show_page("DeckList")
+
+            # Rafraîchir la liste si une méthode existe
+            page = self.controller.pages.get("DeckList")
+            if page and hasattr(page, "charger_decks"):
+                page.charger_decks()
+
+        except DeckNotFoundError:
+            messagebox.showerror(
+                "Deck introuvable",
+                "Ce deck n'existe plus. Veuillez rafraîchir la liste."
+            )
+        except Exception as e:
+            messagebox.showerror(
+                "Erreur",
+                f"Une erreur est survenue lors de la suppression : {e}"
+            )
