@@ -226,6 +226,15 @@ class StorageManager:
                 VALUES (?, ?)
             """, (deck_id, card_id))
             db.commit()
+
+
+    def unlink_card_from_deck_in_db(self, deck_id: int, card_id: int):
+        """Supprime fiche dans un deck."""
+        with sqlite3.connect(self.db_path) as db:
+            db.execute("DELETE FROM lier_fiche_deck WHERE deck_id = ? AND card_id = ?", (deck_id, card_id))
+
+
+
     def add_stats_session(self, deck_id, total_cards, failed_cards) -> int:
         if total_cards <= 0:
             return 0

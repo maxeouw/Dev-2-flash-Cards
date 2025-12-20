@@ -40,6 +40,8 @@ class MainWindow(tk.Tk):
 
         # 1. Moteur audio
         self.audio_manager = AudioManager()
+        self.bind('<f>', lambda e: self.pages["MainMenu"].checkbox.invoke())
+
 
         # Initialisation des pages
         self.pages = {}

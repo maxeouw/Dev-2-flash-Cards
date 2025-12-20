@@ -27,6 +27,14 @@ class DeckDetailPage(ttk.Frame):
         self.nom_entry = ttk.Entry(self.nom_frame, textvariable=self.nom_var, width=40)
         self.nom_entry.pack(side="left", padx=5)
 
+        # --- Contenu du deck ---
+        ttk.Label(self, text="Contenu du deck :", font=("Segoe UI", 10, "bold")).pack(pady=(10, 0))
+        
+        self.tree = ttk.Treeview(self, columns=("id", "question"), show="headings", height=8)
+        self.tree.heading("id", text="ID"); self.tree.column("id", width=50, anchor="center")
+        self.tree.heading("question", text="Question"); self.tree.column("question", width=400)
+        self.tree.pack(padx=20, pady=5, fill="both", expand=True)
+
         # --- Nombre de fiches ---
         self.nb_label = ttk.Label(self, text="Nombre de fiches : 0", font=("Segoe UI", 12))
         self.nb_label.pack(pady=10)
@@ -45,6 +53,11 @@ class DeckDetailPage(ttk.Frame):
             command=self.ouvrir_fenetre_selection
         ).pack(pady=10)
 
+        ttk.Button(
+            self,
+            text="Supprimer une fiche",
+            command=self.retirer_fiche
+        ).pack(pady=10)
 
         # --- Retour ---
         self.retour_btn = ttk.Button(
@@ -84,6 +97,7 @@ class DeckDetailPage(ttk.Frame):
         self.title_label.config(text=f"deck #{deck.id}")
         self.nom_var.set(deck.nom)                      
         self.nb_label.config(text=f"Nombre de fiches : {len(deck.fiche_ids)}")
+        self.update_table()
 
         if self.audio_manager:
             self.audio_manager.parler(f"Détails du deck {deck.nom}")
@@ -159,6 +173,7 @@ class DeckDetailPage(ttk.Frame):
             self.nb_label.config(
                 text=f"Nombre de fiches : {len(self.deck.fiche_ids)}"
             )
+            self.update_table()
             window.destroy()
 
         except DeckNotFoundError as e:
@@ -224,3 +239,22 @@ class DeckDetailPage(ttk.Frame):
                 "Erreur",
                 f"Une erreur est survenue lors de la suppression : {e}"
             )
+
+    def retirer_fiche(self):
+        sel = self.tree.selection()
+        if sel and messagebox.askyesno("Confirmation", "Retirer cette fiche ?"):
+            fid = int(self.tree.item(sel[0], "values")[0])
+            self.deck.fiche_ids.remove(fid)
+            self.forms_manager.storage.unlink_card_from_deck_in_db(self.deck.id, fid) 
+            self.update_table()
+
+    def update_table(self):
+        """tableau avec les fiches actuelles du deck."""
+        for i in self.tree.get_children(): self.tree.delete(i)
+        
+        if not self.deck: return
+        self.nb_label.config(text=f"Nombre de fiches : {len(self.deck.fiche_ids)}")
+
+        for f in self.forms_manager.toutes_les_fiches():
+            if f.id in self.deck.fiche_ids:
+                self.tree.insert("", "end", values=(f.id, f.question))
