@@ -3,10 +3,12 @@ import tkinter as tk
 from tkinter import ttk
 
 class EndOfSessionPage(ttk.Frame):
-    def __init__(self, parent, controller, forms_manager):
+    def __init__(self, parent, controller, forms_manager, audio_manager=None):
         super().__init__(parent)
         self.controller = controller
         self.forms_manager = forms_manager
+        self.audio_manager = audio_manager
+        self.buttons = []
 
         self.deck_id = None
         self.success_rate = 0
@@ -36,6 +38,11 @@ class EndOfSessionPage(ttk.Frame):
             text="Retour à la révision",
             command=lambda: controller.show_page("Revision")
         ).pack(pady=10)
+
+        # --- Accessibilité ---
+        if self.audio_manager:
+            # On configure la navigation et on stocke les boutons
+            self.buttons = self.audio_manager.setup_full_accessibility(self, controller, "Revision")
 
     def configure_result(self, deck_id, success_rate, total, fails):
         """Appelée par RevisionSessionPage à la fin de la session."""
@@ -96,3 +103,10 @@ class EndOfSessionPage(ttk.Frame):
         stats_page.show_graph_for_selected_deck()
 
         self.controller.show_page("Stats")
+
+    def focus_button_if_enabled(self):
+        if self.audio_manager and self.audio_manager.actif:
+            texte_resultat = self.message_label.cget("text")
+            self.audio_manager.parler(texte_resultat)
+            if self.buttons:
+                self.buttons[-1].focus_set()

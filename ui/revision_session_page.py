@@ -2,11 +2,6 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 import random
-<<<<<<< HEAD
-
-
-=======
->>>>>>> refs/remotes/origin/main
 class RevisionSessionPage(ttk.Frame):
     def __init__(self, parent, controller, forms_manager, audio_manager=None):
         super().__init__(parent)

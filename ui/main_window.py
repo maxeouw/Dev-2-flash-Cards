@@ -96,7 +96,7 @@ class MainWindow(tk.Tk):
         self.pages["Stats"] = StatsPage(self.page_container, self, self.storage_manager, self.forms_manager)
         self.pages["Stats"].grid(row=0, column=0, sticky="nsew")
         # Page de fin de session
-        self.pages["EndSession"] = EndOfSessionPage(self.page_container, self, self.forms_manager)
+        self.pages["EndSession"] = EndOfSessionPage(self.page_container, self, self.forms_manager, self.audio_manager)
         self.pages["EndSession"].grid(row=0, column=0, sticky="nsew")
 
     # ---------------------------------------------------------

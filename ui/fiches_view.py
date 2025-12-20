@@ -18,7 +18,7 @@ class FichesViewPage(ttk.Frame):
 
         ttk.Button(
             self,
-            text="➕ Ajouter une fiche",
+            text="Ajouter une fiche",
             command=lambda: controller.show_page("AddForm")
         ).pack(pady=10, ipadx=10, ipady=5)
 

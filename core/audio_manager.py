@@ -2,6 +2,10 @@ import threading
 import pyttsx3
 from tkinter import ttk
 
+class AudioSynthesisError(Exception):
+    """Levée quand la synthèse vocale échoue."""
+    pass
+
 class AudioManager:
     def __init__(self):
         self.lock = threading.Lock()
@@ -11,12 +15,17 @@ class AudioManager:
 
     @property
     def rate(self) -> int:
-        """Getter : récupère la vitesse de parole."""
+        """Getter : récupère la vitesse de parole.
+        Post
+        Retourne un entier entre 50 et 300.
+        """
         return self._rate
 
     @rate.setter
     def rate(self, vitesse: int) -> None:
-        """Setter : change la vitesse avec validation (50-300)."""
+        """Setter : change la vitesse avec validation (50-300).
+        Pre
+        -Vitesse doit être un entier entre 50 et 300."""
         if not 50 <= vitesse <= 300:
             raise ValueError("La vitesse doit être entre 50 et 300")
         self._rate = vitesse
@@ -28,7 +37,10 @@ class AudioManager:
 
     @actif.setter
     def actif(self, etat: bool) -> None:
-        """Setter : change l'état du mode accessibilité avec validation."""
+        """Setter : change l'état du mode accessibilité avec validation.
+        Pre
+        -Etat doit être un booléen.
+        """
         if not isinstance(etat, bool):
             raise ValueError("L'état doit être un booléen (True/False)")
         self._actif = etat
@@ -37,6 +49,14 @@ class AudioManager:
         self.actif = etat   # setter appelé
 
     def parler(self, texte):
+        """Pre
+        -texte doit être une chaîne non vide.
+        -self.actif doit être True.
+        
+        Post
+        -si self.actif est False, ne fait rien.
+        - un nouveau thread est lancé pour dire le texte.
+        -current_msg_id est incrémenté pour annuler les messages précédents."""
         if not self.actif:  # getter appelé
             return
         self.current_msg_id += 1
@@ -46,6 +66,22 @@ class AudioManager:
         thread.start()
 
     def _speak_one_shot(self, texte, msg_id):
+        """
+        Pre
+        -texte doit être une chaîne non vide.
+        -msg_id doit être un entier positif.
+        -self.actif doit être True.
+        -self.lock doit être disponible.
+
+        Post
+        -le texte est prononcé via la vitesse définie par self.rate.
+        -si self.current_msg_id != msg_id, la lecture est annulée.
+        -des exceptions AudioSynthesisError sont levées en cas d'erreur.
+
+        Raises
+        -AudioSynthesisError : si une erreur survient lors de la synthèse vocale.
+        """
+
         with self.lock:
             # dernier msg demandé ?
             if msg_id != self.current_msg_id:
@@ -55,11 +91,16 @@ class AudioManager:
             try:
                 engine = pyttsx3.init()
                 engine.setProperty('rate', self.rate) # getter
-                
                 engine.say(texte)
                 engine.runAndWait()
+            except RuntimeError as e:
+                raise AudioSynthesisError(
+                    f"Erreur lors de l'initialisation du moteur TTS: {e}"
+                )
             except Exception as e:
-                print(f"[Erreur Audio] : {e}")
+                raise AudioSynthesisError(
+                    f"Erreur lors de la synthèse vocale: {e}"
+                )
 
     def setup_full_accessibility(self, page, controller=None, back_page=None):
         buttons = []

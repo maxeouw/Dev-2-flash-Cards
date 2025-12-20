@@ -10,6 +10,7 @@ class DeckDetailPage(ttk.Frame):
         self.forms_manager = forms_manager
         self.audio_manager = audio_manager
         self.deck = None  # deck actuellement affiché
+        self.buttons = []
 
         self.title_label = ttk.Label(
             self, text="Détails du deck", font=("Segoe UI", 16, "bold")
@@ -35,14 +36,26 @@ class DeckDetailPage(ttk.Frame):
         ttk.Button(self, text="Lier une fiche",command=self.ouvrir_fenetre_selection).pack(pady=10)
 
         # --- Retour ---
-        ttk.Button(
+        self.retour_btn = ttk.Button(
             self,
             text="Retour",
             command=lambda: controller.show_page("DeckList")
-        ).pack(pady=20)
+        )
+        self.retour_btn.pack(pady=20)
 
         if self.audio_manager:
-            self.audio_manager.setup_full_accessibility(self, controller, "DeckList")
+            self.buttons = audio_manager.setup_full_accessibility(self, controller, "DeckList")
+        self.after(100, self.focus_button_if_enabled)
+
+    def focus_button_if_enabled(self):
+        """Exactement la même logique que dans revision_view.py"""
+        if self.buttons:
+            # On vérifie si le mode est actif dans le MainMenu
+            main_menu = self.controller.pages.get("MainMenu")
+            if main_menu and hasattr(main_menu, 'mode_actif') and main_menu.mode_actif:
+                self.buttons[0].focus_set()
+                if self.audio_manager:
+                    self.audio_manager.parler(f"Bouton : {self.buttons[0]['text']}")
 
     # ------------------------------------------------------
     def charger_deck(self, deck_id: int):
@@ -100,6 +113,14 @@ class DeckDetailPage(ttk.Frame):
         tree.bind("<Right>", valider)
         tree.bind("<Left>", lambda e: top.destroy())
 
+        if self.audio_manager:
+            self.audio_manager.setup_treeview_accessibility(
+                tree, 
+                speak_callback=lambda e: self.speak_fiche_selection(tree),
+                validate_callback=valider,
+                back_callback=lambda e: top.destroy()
+            )
+
         # Focus au début
         tree.focus_set()
         if tree.get_children():
@@ -141,3 +162,17 @@ class DeckDetailPage(ttk.Frame):
                 "Erreur inattendue",
                 f"Une erreur est survenue : {e}"
             )
+
+    def speak_fiche_selection(self, tree):
+        if not self.audio_manager or not self.audio_manager.actif:
+            return
+        
+        selection = tree.selection()
+        if not selection:
+            return
+        
+        item = selection[0]
+        values = tree.item(item, "values")
+        # values[0] = id, values[1] = question
+        question = values[1]
+        self.audio_manager.parler(f"Question : {question}")
