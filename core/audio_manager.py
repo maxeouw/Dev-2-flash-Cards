@@ -125,7 +125,7 @@ class AudioManager:
                 btn.bind("<Left>", lambda e: controller.show_page(back_page))
         return buttons
 
-    def setup_treeview_accessibility(self, treeview, speak_callback, validate_callback=None, back_callback=None):
+    def setup_treeview_accessibility(self, treeview, speak_callback, validate_callback=None, back_callback=None, next_widget=None):
         if not self.actif:
             return
 
@@ -160,6 +160,11 @@ class AudioManager:
                     treeview.selection_set(children[new_idx])
                     treeview.see(children[new_idx])
                     speak_callback(event)
+                # Si on est à la fin qu'un widget suivant est défini, on sort du tableau
+                elif next_widget:
+                    next_widget.focus_set()
+                    if hasattr(next_widget, 'cget'):
+                        self.parler(f"Bouton : {next_widget.cget('text')}")
             except ValueError:
                 pass
 

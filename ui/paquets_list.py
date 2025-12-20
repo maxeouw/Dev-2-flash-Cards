@@ -9,6 +9,7 @@ class ManagePaquetsPage(ttk.Frame):
         self.controller = controller
         self.forms_manager = forms_manager
         self.audio_manager = audio_manager
+        self.buttons = []
 
         ttk.Label(
             self,
@@ -50,6 +51,21 @@ class ManagePaquetsPage(ttk.Frame):
             command=lambda: controller.show_page("FichesView"))
         self.btn_retour.pack(pady=15)
 
+# --- ACCESSIBILITÉ ---
+        if self.audio_manager:
+            self.buttons = self.audio_manager.setup_full_accessibility(self, controller, "FichesView")
+            
+            if self.buttons:
+                self.buttons[0].bind("<Up>", lambda e: self.focus_tree())
+
+    def focus_tree(self):
+        """Redonne le focus au tableau"""
+        self.tree.focus_set()
+        if self.audio_manager and self.audio_manager.actif:
+            sel = self.tree.selection()
+            msg = f"Tableau des decks. {self.tree.item(sel[0], 'values')[1]}" if sel else "Tableau des decks"
+            self.audio_manager.parler(msg)
+
     # --------------------------------------------------
     def update_list(self):
         """Recharge les decks dans le tableau."""
@@ -67,13 +83,15 @@ class ManagePaquetsPage(ttk.Frame):
 
    # Accessibilité
         if self.audio_manager:
+            premier_btn = self.buttons[0] if self.buttons else None
             self.audio_manager.setup_treeview_accessibility(
             self.tree,
             self.speak_selection,
             validate_callback=lambda e: self.on_double_click(e),
-            back_callback=lambda e: self.btn_retour.invoke()
+            back_callback=lambda e: self.btn_retour.invoke(),
+            next_widget=premier_btn
         )
-    
+
     def on_double_click(self, event):
         """Ouvre la page de détails du deck sélectionné."""
         selection = self.tree.selection()

@@ -9,6 +9,7 @@ class ListeFichesPage(ttk.Frame):
         self.controller = controller
         self.forms_manager = forms_manager
         self.audio_manager = audio_manager
+        self.buttons = []
 
         ttk.Label(
             self,
@@ -53,6 +54,20 @@ class ListeFichesPage(ttk.Frame):
             command=lambda: controller.show_page("AddForm")
         ).pack(side="left", padx=10, ipadx=10, ipady=5)
 
+        # --- ACCESSIBILITÉ ---
+        if self.audio_manager:
+            self.buttons = self.audio_manager.setup_full_accessibility(self, controller, "FichesView")
+            
+            if self.buttons:
+                self.buttons[0].bind("<Up>", lambda e: self.focus_tree())
+
+    def focus_tree(self):
+        """Redonne le focus au tableau"""
+        self.tree.focus_set()
+        if self.audio_manager and self.audio_manager.actif:
+            sel = self.tree.selection()
+            msg = f"Tableau des fiches. {self.tree.item(sel[0], 'values')[1]}" if sel else "Tableau des fiches"
+
     # --------------------------------------------------
     def update_list(self):
         """Recharge les fiches dans le tableau."""
@@ -69,11 +84,13 @@ class ListeFichesPage(ttk.Frame):
             )
 
             if self.audio_manager:
+                premier_btn = self.buttons[0] if self.buttons else None
                 self.audio_manager.setup_treeview_accessibility(
                 self.tree,
                 self.speak_selection,
                 validate_callback=lambda e: self.on_double_click(e),
-                back_callback=lambda e: self.btn_retour.invoke()
+                back_callback=lambda e: self.btn_retour.invoke(),
+                next_widget=premier_btn
                 )
     # --------------------------------------------------
     def on_double_click(self, event):
