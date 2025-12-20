@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
+import random
+
 
 class RevisionSessionPage(ttk.Frame):
     def __init__(self, parent, controller, forms_manager, audio_manager=None):
@@ -70,11 +72,13 @@ class RevisionSessionPage(ttk.Frame):
         if self.deck_id_filter is not None:
              # Si filtre actif, on charge uniquement ce deck
             self.fiches = self.forms_manager.get_fiches_by_deck_id(self.deck_id_filter)
+            random.shuffle(self.fiches)
             self.current_deck_id = self.deck_id_filter   # NEW
             self.deck_id_filter = None  # reset
         else:
             # Par défaut tout étudier
             self.fiches = self.forms_manager.toutes_les_fiches()
+            random.shuffle(self.fiches)
             self.current_deck_id = None  # signifie "tous les decks"
 
         if not self.fiches:
