@@ -2,8 +2,11 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 import random
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> refs/remotes/origin/main
 class RevisionSessionPage(ttk.Frame):
     def __init__(self, parent, controller, forms_manager, audio_manager=None):
         super().__init__(parent)
@@ -85,7 +88,7 @@ class RevisionSessionPage(ttk.Frame):
             messagebox.showinfo("Révision", "Aucune fiche à réviser.")
             self.controller.show_page("RevisionPage")
             return
-
+        random.shuffle(self.fiches)
         # NEW: init session counters
         self.session_total_cards = len(self.fiches)
         self.session_failed_cards = 0
@@ -158,15 +161,30 @@ class RevisionSessionPage(ttk.Frame):
         if self.current_index >= len(self.fiches):
             # Fin de session : enregistrer les stats
             self._sauvegarder_stats_session()
-            #messagebox.showinfo("Révision", "Révision terminée !")
-            # Quand le mode audio est actif, on attend avant de changer de page
+
+            # Calcul des infos de la session
+            total = self.session_total_cards
+            fails = self.session_failed_cards
+            success_rate = 0
+            if total > 0:
+                success_rate = (total - fails) / total * 100.0
+
+            # Configurer la page de fin de session
+            end_page = self.controller.pages["EndSession"]
+            end_page.configure_result(self.current_deck_id, success_rate, total, fails)
+
+            # Audio si actif
             if self.audio_manager and self.audio_manager.actif:
-                self.audio_manager.parler("Révision terminée")
-                self.after(2000, lambda: self.controller.show_page("Revision"))
-            else:
-                self.controller.show_page("Revision")
+                self.audio_manager.parler("Révision terminée.")
+                self.audio_manager.parler(
+                    f"Tu as réussi {int(success_rate)} pour cent des cartes."
+                )
+
+            # Aller sur la page de fin
+            self.controller.show_page("EndSession")
             return
 
+        # Sinon, on affiche la question suivante
         self.afficher_question()
     def _sauvegarder_stats_session(self):
         """

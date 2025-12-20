@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -39,3 +39,17 @@ class Deck:
     id: int
     nom: str
     fiche_ids: List[int] = field(default_factory=list)
+
+@dataclass
+class Stats:
+    """Représente une session de révision enregistré en base"""
+    deck_id: Optional[int]
+    date_session: datetime
+    total_cards: int
+    failed_cards: int
+    success_rate: float  # 0–100
+
+    @property
+    def fail_rate(self) -> float:
+        """Pourcentage d'échec, calculé à partir du taux de réussi"""
+        return 100.0 - self.success_rate

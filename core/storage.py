@@ -3,7 +3,7 @@
 import sqlite3
 from datetime import datetime
 from typing import List
-from core.models import Form
+from core.models import Form, Stats
 
 
 class StorageManager:
@@ -223,39 +223,49 @@ class StorageManager:
             db.commit()
             return cursor.lastrowid
 
-    def load_stats_for_deck(self, deck_id=None):
+    def load_stats_for_deck(self, deck_id=None) -> List[Stats]:
         with sqlite3.connect(self.db_path) as db:
             cursor = db.cursor()
-        if deck_id is None:
-            cursor.execute(
-                """
-                SELECT deck_id, date_session, total_cards, failed_cards, success_rate
-                FROM stats_revision
-                ORDER BY date_session ASC
-                """
-            )
-        else:
-            cursor.execute(
-                """
-                SELECT deck_id, date_session, total_cards, failed_cards, success_rate
-                FROM stats_revision
-                WHERE deck_id = ?
-                ORDER BY date_session ASC
-                """,
+            if deck_id is None:
+                cursor.execute(
+                    """
+                    SELECT deck_id, date_session, total_cards, failed_cards, success_rate
+                    FROM stats_revision
+                    ORDER BY date_session ASC
+                    """
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT deck_id, date_session, total_cards, failed_cards, success_rate
+                    FROM stats_revision
+                    WHERE deck_id = ?
+                    ORDER BY date_session ASC
+                    """,
                 (deck_id,),
-            )
-        rows = cursor.fetchall()
+                )
+            rows = cursor.fetchall()
 
-        stats = []
+        stats: List[Stats] = []
         for deck_id_val, date_session, total, failed, success in rows:
             stats.append(
-                {
-                    "deck_id": deck_id_val,
-                    "date_session": date_session,
-                    "total_cards": total,
-                    "failed_cards": failed,
-                    "success_rate": success,
-                }
+                Stats(
+                    deck_id=deck_id_val,
+                    date_session=datetime.fromisoformat(date_session),
+                    total_cards=total,
+                    failed_cards=failed,
+                    success_rate=success,
+                )
             )
         return stats
+    def get_last_stats_for_deck(self, deck_id: int) -> Stats:
+        """Retourne la dernière session pour un deck, ou StatsNotFoundError"""
+        stats = self.load_stats_for_deck(deck_id)
+        if not stats:
+            raise StatsNotFoundError(f"Aucune statistique pour le deck {deck_id}")
+        return stats[-1]
 
+
+class StatsNotFoundError(Exception):
+    """Exception si il n'y a pas des stats pour un deck"""
+    pass

@@ -106,10 +106,10 @@ class StatsPage(ttk.Frame):
         decks = {d.id: d.nom for d in self.forms_manager.tous_les_decks()}
 
         for s in stats:
-            success_pct = s["success_rate"]
-            date_str = s["date_session"].split("T")[0]
-            deck_id = s["deck_id"]
-            deck_name = decks.get(deck_id, "Inconnu")  
+            success_pct = s.success_rate
+            date_str = s.date_session.date().isoformat()
+            deck_id = s.deck_id
+            deck_name = decks.get(deck_id, "Inconnu")
 
             self.tree.insert(
                 "",
@@ -117,8 +117,8 @@ class StatsPage(ttk.Frame):
                 values=(
                     date_str,
                     deck_name,
-                    s["total_cards"],
-                    s["failed_cards"],
+                    s.total_cards,
+                    s.failed_cards,
                     f"{success_pct:.1f}%",
                 ),
             )
@@ -147,7 +147,7 @@ class StatsPage(ttk.Frame):
             return
 
         # success_values = pourcentage de réussite de chaque run
-        success_values = [s["success_rate"] for s in stats]
+        success_values = [s.success_rate for s in stats]
 
         # Option : moyenne cumulative pour visualiser l'amélioration globale
         cumulated = []
