@@ -78,9 +78,9 @@ class StatsPage(ttk.Frame):
         self.graph_frame.pack(pady=20)
 
         # Figure avec deux sous-graphiques
-        self.figure = Figure(figsize=(6, 5), dpi=100)
-        self.ax_avg = self.figure.add_subplot(211)   # moyenne cumulative
-        self.ax_raw = self.figure.add_subplot(212, sharex=self.ax_avg)  # brut
+        self.figure = Figure(figsize=(15, 3), dpi=100)
+        self.ax_avg = self.figure.add_subplot(121)   # moyenne cumulative
+        self.ax_raw = self.figure.add_subplot(122, sharex=self.ax_avg)  # brut
 
         self.canvas_mpl = FigureCanvasTkAgg(self.figure,
                                             master=self.graph_frame)
