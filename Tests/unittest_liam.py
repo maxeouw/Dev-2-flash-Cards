@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
-from core.models import Form, Deck
+from core.models import FlashCard, Deck
 from core.storage import StorageManager
 from core.formManager import FormsManager, DeckCreationError
 
@@ -35,7 +35,7 @@ class TestFormsManagerLiam(unittest.TestCase):
         fiche = self.forms_manager.create_form(question, reponses)
 
         # Assert
-        self.assertIsInstance(fiche, Form)
+        self.assertIsInstance(fiche, FlashCard)
         self.assertEqual(fiche.reponses, reponses)  # Vérifie que la liste est bien stockée
         self.assertEqual(len(fiche.reponses), 3)    # Il doit y avoir 3 variantes
         
@@ -73,11 +73,11 @@ class TestFormsManagerLiam(unittest.TestCase):
     def test_modify_form_updates_memory_and_db(self):
         """Test la modification d'une fiche existante."""
         # Arrange : Création d'une fiche initiale
-        fiche_originale = Form(id=1, question="Q1", reponses=["R1"])
+        fiche_originale = FlashCard(id=1, question="Q1", reponses=["R1"])
         self.forms_manager.fiches = [fiche_originale]
 
         # On prépare la version modifiée (même ID, nouveau contenu)
-        fiche_modifiee = Form(id=1, question="Q1 Modifiée", reponses=["R1", "R2"])
+        fiche_modifiee = FlashCard(id=1, question="Q1 Modifiée", reponses=["R1", "R2"])
 
         # Act
         resultat = self.forms_manager.modify_form(fiche_modifiee)
