@@ -192,8 +192,7 @@ class StatsPage(ttk.Frame):
         self.ax_avg.set_xlabel("Nombre de révisions (sessions)")
         self.ax_avg.set_ylabel("Moyenne de réussite (%)")
         self.ax_avg.set_xlim(x_min, x_max)
-        self.ax_avg.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
-        self.ax_avg.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+        self.ax_avg.xaxis.set_major_locator(mticker.MaxNLocator(1))
         self.ax_avg.set_ylim(0, 110)
         self.ax_avg.grid(True, linestyle="--", alpha=0.3)
 
@@ -204,7 +203,6 @@ class StatsPage(ttk.Frame):
         self.ax_raw.set_xlabel("Nombre de révisions (sessions)")
         self.ax_raw.set_ylabel("Réussite (%)")
         self.ax_raw.set_xlim(x_min, x_max)
-        self.ax_raw.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
         self.ax_raw.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
         self.ax_raw.set_ylim(0, 110)
         self.ax_raw.grid(True, linestyle="--", alpha=0.3)
