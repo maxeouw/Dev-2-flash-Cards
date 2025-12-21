@@ -15,15 +15,13 @@ class StatsPage(ttk.Frame):
         self.controller = controller
         self.storage_manager = storage_manager
         self.forms_manager = forms_manager
-
-        # ----- Conteneur central pour centrer le contenu -----
         center_frame = ttk.Frame(self)
         center_frame.pack(expand=True)
 
         ttk.Label(center_frame, text="Tableau de bord",
                   font=("Segoe UI", 16, "bold")).pack(pady=20)
 
-        # --- Ligne de contrôle (deck + boutons) ---
+        # deck + buttns
         control_frame = ttk.Frame(center_frame)
         control_frame.pack(pady=5)
 
@@ -41,7 +39,7 @@ class StatsPage(ttk.Frame):
         self.deck_combo.bind("<<ComboboxSelected>>",
                              lambda e: self.refresh_stats_all())
 
-        # Mapping nom_deck -> id
+        # Mapping name -> id
         self.deck_name_to_id = {}
 
         # Bouton Rafraîchir (table)
@@ -73,33 +71,30 @@ class StatsPage(ttk.Frame):
 
         self.tree.pack(fill="both", expand=True, padx=20, pady=10)
 
-        # --- Zone pour les graphes Matplotlib ---
+        # espace entre les graphs
         self.graph_frame = ttk.Frame(center_frame)
         self.graph_frame.pack(pady=20)
 
-        # Figure avec deux sous-graphiques
+        # 2 graphiques
         self.figure = Figure(figsize=(15, 3), dpi=100)
-        self.ax_avg = self.figure.add_subplot(121)   # moyenne cumulative
+        self.ax_avg = self.figure.add_subplot(121)   # moyenne 
         self.ax_raw = self.figure.add_subplot(122, sharex=self.ax_avg)  # brut
 
         self.canvas_mpl = FigureCanvasTkAgg(self.figure,
                                             master=self.graph_frame)
         self.canvas_mpl.get_tk_widget().pack()
 
-        # Bouton retour
+        # Boutton retour
         ttk.Button(
             center_frame,
             text="Retour",
             command=lambda: controller.show_page("MainMenu")
         ).pack(pady=10)
 
-        # Charger les decks et les stats au démarrage
         self.load_decks_into_combobox()
         self.refresh_stats_all()
 
-    # ------------------------------------------------------------------
-    # Combobox decks
-    # ------------------------------------------------------------------
+    # bouton combobox
     def load_decks_into_combobox(self):
         """Remplit le combobox avec tous les decks."""
         self.deck_name_to_id.clear()
@@ -111,13 +106,10 @@ class StatsPage(ttk.Frame):
             names.append(name)
         self.deck_combo["values"] = names
         if names:
-            self.deck_combo.current(0)  # sélectionne le premier deck
+            self.deck_combo.current(0)  
 
-    # ------------------------------------------------------------------
-    # Tableau des sessions
-    # ------------------------------------------------------------------
+    # bouton refresh pour mettre a jour le tableau et le graph
     def refresh_stats_all(self):
-        """Affiche dans le tableau uniquement les sessions du deck sélectionné."""
         # Vider le tableau
         for row in self.tree.get_children():
             self.tree.delete(row)
@@ -126,14 +118,14 @@ class StatsPage(ttk.Frame):
         deck_name = self.deck_var.get()
 
         if deck_name and deck_name in self.deck_name_to_id:
-            # Filtrer sur ce deck
+            # Filtrer sur deck name
             deck_id = self.deck_name_to_id[deck_name]
             stats = self.storage_manager.load_stats_for_deck(deck_id)
         else:
             # Si rien de valide n'est sélectionné, on n'affiche rien
             stats = []
 
-        # Mapping id -> nom pour afficher le nom du deck dans la colonne
+        # afficher nom du deck name dans le form
         decks = {d.id: d.nom for d in self.forms_manager.tous_les_decks()}
 
         for s in stats:
@@ -153,11 +145,8 @@ class StatsPage(ttk.Frame):
                 ),
             )
 
-    # ------------------------------------------------------------------
-    # Graphes par deck
-    # ------------------------------------------------------------------
+    # graph pour deck id
     def show_graph_for_selected_deck(self):
-        """Trace deux graphes: moyenne cumulative + réussite par session."""
         deck_name = self.deck_var.get()
         if not deck_name or deck_name not in self.deck_name_to_id:
             return
@@ -180,15 +169,11 @@ class StatsPage(ttk.Frame):
             self.ax_raw.set_axis_off()
             self.canvas_mpl.draw()
             return
-
-        # Réactiver les axes si on les avait cachés
+        #on pour les axes
         self.ax_avg.set_axis_on()
         self.ax_raw.set_axis_on()
-
-        # success_values = pourcentage de réussite de chaque run (brut)
         success_values = [s.success_rate for s in stats]
-
-        # Moyenne cumulative
+        # Moyenne amélioration
         cumulated = []
         total = 0.0
         for i, val in enumerate(success_values, start=1):
