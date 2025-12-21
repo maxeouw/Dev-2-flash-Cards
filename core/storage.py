@@ -3,7 +3,7 @@
 import sqlite3
 from datetime import datetime
 from typing import List
-from core.models import Form, Stats
+from core.models import FlashCard, Stats
 
 
 class StorageManager:
@@ -74,7 +74,7 @@ class StorageManager:
             """)
             db.commit()
 
-    def add_form_to_db(self, form: Form) -> int:
+    def add_form_to_db(self, form: FlashCard) -> int:
         """Insère une fiche dans la DB et retourne son ID."""
         tags_str = ",".join(form.tags) if form.tags else ""
         reponses_str = "|".join(form.reponses) if form.reponses else ""
@@ -97,7 +97,7 @@ class StorageManager:
             db.commit()
             return cursor.lastrowid
 
-    def update_form_in_db(self, form: Form) -> bool:
+    def update_form_in_db(self, form: FlashCard) -> bool:
         """Met à jour une fiche dans la DB."""
         tags_str = ",".join(form.tags) if form.tags else ""
         reponses_str = "|".join(form.reponses) if form.reponses else ""
@@ -128,9 +128,9 @@ class StorageManager:
             db.commit()
             return cursor.rowcount > 0
 
-    def load_all_forms(self) -> List[Form]:
+    def load_all_forms(self) -> List[FlashCard]:
         """Charge toutes les fiches depuis la DB."""
-        forms: List[Form] = []
+        forms: List[FlashCard] = []
         with sqlite3.connect(self.db_path) as db:
             cursor = db.cursor()
             cursor.execute("SELECT * FROM carte")
@@ -139,7 +139,7 @@ class StorageManager:
         for row in rows:
             reponses_list = row[2].split("|") if row[2] else [""]
 
-            forms.append(Form(
+            forms.append(FlashCard(
                 id=row[0],
                 question=row[1],
                 reponses=reponses_list,

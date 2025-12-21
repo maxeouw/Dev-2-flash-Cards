@@ -1,19 +1,30 @@
 # ui/stats_page.py
+
 import tkinter as tk
 from tkinter import ttk
+
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.ticker as mticker
 
 
 class StatsPage(ttk.Frame):
     def __init__(self, parent, controller, storage_manager, forms_manager):
         super().__init__(parent)
+
         self.controller = controller
         self.storage_manager = storage_manager
         self.forms_manager = forms_manager
 
-        ttk.Label(self, text="Tableau de bord", font=("Segoe UI", 16, "bold")).pack(pady=20)
+        # ----- Conteneur central pour centrer le contenu -----
+        center_frame = ttk.Frame(self)
+        center_frame.pack(expand=True)
+
+        ttk.Label(center_frame, text="Tableau de bord",
+                  font=("Segoe UI", 16, "bold")).pack(pady=20)
 
         # --- Ligne de contrôle (deck + boutons) ---
-        control_frame = ttk.Frame(self)
+        control_frame = ttk.Frame(center_frame)
         control_frame.pack(pady=5)
 
         ttk.Label(control_frame, text="Deck :").pack(side="left", padx=5)
@@ -27,6 +38,8 @@ class StatsPage(ttk.Frame):
             width=25
         )
         self.deck_combo.pack(side="left", padx=5)
+        self.deck_combo.bind("<<ComboboxSelected>>",
+                             lambda e: self.refresh_stats_all())
 
         # Mapping nom_deck -> id
         self.deck_name_to_id = {}
@@ -47,25 +60,35 @@ class StatsPage(ttk.Frame):
 
         # --- Tableau des sessions ---
         columns = ("date", "deck", "total", "failed", "success_pct")
-        self.tree = ttk.Treeview(self, columns=columns, show="headings", height=10)
+        self.tree = ttk.Treeview(center_frame, columns=columns,
+                                 show="headings", height=10)
         self.tree.heading("date", text="Date")
         self.tree.heading("deck", text="Deck")
         self.tree.heading("total", text="Cartes")
         self.tree.heading("failed", text="Échecs")
-        self.tree.heading("success_pct", text="% .de réussite")
+        self.tree.heading("success_pct", text="% de réussite")
 
         for col in columns:
             self.tree.column(col, anchor="center", width=90)
 
         self.tree.pack(fill="both", expand=True, padx=20, pady=10)
 
-        # --- Canvas pour graphe ---
-        self.canvas = tk.Canvas(self, width=500, height=200, bg="white")
-        self.canvas.pack(pady=10)
+        # --- Zone pour les graphes Matplotlib ---
+        self.graph_frame = ttk.Frame(center_frame)
+        self.graph_frame.pack(pady=20)
+
+        # Figure avec deux sous-graphiques
+        self.figure = Figure(figsize=(15, 3), dpi=100)
+        self.ax_avg = self.figure.add_subplot(121)   # moyenne cumulative
+        self.ax_raw = self.figure.add_subplot(122, sharex=self.ax_avg)  # brut
+
+        self.canvas_mpl = FigureCanvasTkAgg(self.figure,
+                                            master=self.graph_frame)
+        self.canvas_mpl.get_tk_widget().pack()
 
         # Bouton retour
         ttk.Button(
-            self,
+            center_frame,
             text="Retour",
             command=lambda: controller.show_page("MainMenu")
         ).pack(pady=10)
@@ -86,7 +109,6 @@ class StatsPage(ttk.Frame):
             name = deck.nom
             self.deck_name_to_id[name] = deck.id
             names.append(name)
-
         self.deck_combo["values"] = names
         if names:
             self.deck_combo.current(0)  # sélectionne le premier deck
@@ -95,14 +117,23 @@ class StatsPage(ttk.Frame):
     # Tableau des sessions
     # ------------------------------------------------------------------
     def refresh_stats_all(self):
-        """Affiche toutes les sessions dans le tableau."""
+        """Affiche dans le tableau uniquement les sessions du deck sélectionné."""
+        # Vider le tableau
         for row in self.tree.get_children():
             self.tree.delete(row)
 
-        # None = tous les decks
-        stats = self.storage_manager.load_stats_for_deck()
+        # Récupérer le deck sélectionné dans le combobox
+        deck_name = self.deck_var.get()
 
-        # Pour afficher le nom du deck, on construit un mapping id->nom
+        if deck_name and deck_name in self.deck_name_to_id:
+            # Filtrer sur ce deck
+            deck_id = self.deck_name_to_id[deck_name]
+            stats = self.storage_manager.load_stats_for_deck(deck_id)
+        else:
+            # Si rien de valide n'est sélectionné, on n'affiche rien
+            stats = []
+
+        # Mapping id -> nom pour afficher le nom du deck dans la colonne
         decks = {d.id: d.nom for d in self.forms_manager.tous_les_decks()}
 
         for s in stats:
@@ -110,7 +141,6 @@ class StatsPage(ttk.Frame):
             date_str = s.date_session.date().isoformat()
             deck_id = s.deck_id
             deck_name = decks.get(deck_id, "Inconnu")
-
             self.tree.insert(
                 "",
                 "end",
@@ -124,78 +154,77 @@ class StatsPage(ttk.Frame):
             )
 
     # ------------------------------------------------------------------
-    # Graphe par deck
+    # Graphes par deck
     # ------------------------------------------------------------------
     def show_graph_for_selected_deck(self):
-        """Récupère le deck choisi et trace la courbe de réussite de tous ses runs."""
-        self.canvas.delete("all")
-
+        """Trace deux graphes: moyenne cumulative + réussite par session."""
         deck_name = self.deck_var.get()
         if not deck_name or deck_name not in self.deck_name_to_id:
-            return  # rien sélectionné
+            return
 
         deck_id = self.deck_name_to_id[deck_name]
         stats = self.storage_manager.load_stats_for_deck(deck_id)
-
         if not stats:
-            # Rien à tracer
-            self.canvas.create_text(
-                250, 100,
-                text="Aucune session pour ce deck.",
-                fill="gray"
+            # Effacer l'ancien contenu et afficher un message
+            self.ax_avg.clear()
+            self.ax_raw.clear()
+            self.ax_avg.text(
+                0.5,
+                0.5,
+                "Aucune session pour ce deck.",
+                ha="center",
+                va="center",
+                transform=self.ax_avg.transAxes,
             )
+            self.ax_avg.set_axis_off()
+            self.ax_raw.set_axis_off()
+            self.canvas_mpl.draw()
             return
 
-        # success_values = pourcentage de réussite de chaque run
+        # Réactiver les axes si on les avait cachés
+        self.ax_avg.set_axis_on()
+        self.ax_raw.set_axis_on()
+
+        # success_values = pourcentage de réussite de chaque run (brut)
         success_values = [s.success_rate for s in stats]
 
-        # Option : moyenne cumulative pour visualiser l'amélioration globale
+        # Moyenne cumulative
         cumulated = []
         total = 0.0
         for i, val in enumerate(success_values, start=1):
             total += val
             cumulated.append(total / i)
 
-        # Choisir ce que tu veux tracer :
-        values_to_plot = cumulated  # courbe d'amélioration moyenne
-        # values_to_plot = success_values  # courbe brute run par run
+        x_values = list(range(1, len(success_values) + 1))
+        n = len(x_values)
+        x_min = 0.5
+        x_max = n + 0.5
 
-        n = len(values_to_plot)
-        max_val = 100.0  # échelle fixe 0–100
+        # Graphe 1
+        self.ax_avg.clear()
+        self.ax_avg.bar(x_values, cumulated, color="green", width=0.5)
+        self.ax_avg.set_title("Graphique de l'Amélioration")
+        self.ax_avg.set_xlabel("Nombre de révisions (sessions)")
+        self.ax_avg.set_ylabel("Moyenne de réussite (%)")
+        self.ax_avg.set_xlim(x_min, x_max)
+        self.ax_avg.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+        self.ax_avg.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+        self.ax_avg.set_ylim(0, 110)
+        self.ax_avg.grid(True, linestyle="--", alpha=0.3)
 
-        w = int(self.canvas["width"])
-        h = int(self.canvas["height"])
-        padding = 30
+        # Graphe 2
+        self.ax_raw.clear()
+        self.ax_raw.plot(x_values, success_values, marker="o", color="blue")
+        self.ax_raw.set_title("Pourcentage de réussite par session")
+        self.ax_raw.set_xlabel("Nombre de révisions (sessions)")
+        self.ax_raw.set_ylabel("Réussite (%)")
+        self.ax_raw.set_xlim(x_min, x_max)
+        self.ax_raw.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+        self.ax_raw.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+        self.ax_raw.set_ylim(0, 110)
+        self.ax_raw.grid(True, linestyle="--", alpha=0.3)
 
-        # Axes
-        self.canvas.create_line(padding, h - padding, w - padding, h - padding)  # X
-        self.canvas.create_line(padding, padding, padding, h - padding)          # Y
+        # Plus d’espace entre les deux graphes
+        self.figure.tight_layout(h_pad=5)
 
-        # Graduation Y : 0, 10, 20, ..., 100
-        for pct in range(0, 101, 10):
-            y = h - padding - (pct / 100.0) * (h - 2 * padding)
-            self.canvas.create_line(padding - 5, y, padding + 5, y)
-            self.canvas.create_text(padding - 10, y, text=str(pct), anchor="e")
-
-        # Pas en X
-        if n == 1:
-            x_step = w - 2 * padding
-        else:
-            x_step = (w - 2 * padding) / (n - 1)
-
-        points = []
-        for i, val in enumerate(values_to_plot):
-            x = padding + i * x_step
-            y = h - padding - (val / max_val) * (h - 2 * padding)
-            points.append((x, y))
-
-        # Ligne
-        for i in range(len(points) - 1):
-            x1, y1 = points[i]
-            x2, y2 = points[i + 1]
-            self.canvas.create_line(x1, y1, x2, y2, fill="green", width=2)
-
-        # Points + numéros de run en X
-        for idx, (x, y) in enumerate(points, start=1):
-            self.canvas.create_oval(x - 3, y - 3, x + 3, y + 3, fill="green")
-            self.canvas.create_text(x, h - padding + 10, text=str(idx), anchor="n")
+        self.canvas_mpl.draw()

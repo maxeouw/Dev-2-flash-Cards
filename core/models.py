@@ -4,7 +4,7 @@ from typing import List, Optional
 
 
 @dataclass
-class Form:
+class FlashCard:
     id: int
     question: str
     tags: List[str] = field(default_factory=list)

@@ -10,7 +10,6 @@ jean_memorator/
 │   ├── audio_manager.py             # Gestion audio/accessibilité
 │   ├── formManager.py               # Gestion des fiches et decks
 │   ├── models.py                    # Classes Fiche, Deck, Utilisateur, etc.
-│   ├── spaced_repetition.py         # Système de révision espacée
 │   └── storage.py                   # Sauvegarde/chargement (JSON, SQLite)
 │
 ├── ui/                              # Interface graphique (Tkinter)

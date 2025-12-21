@@ -1,6 +1,6 @@
 from typing import List, Optional, Union
 from datetime import datetime
-from core.models import Form, Deck
+from core.models import FlashCard, Deck
 from typing import List, Optional
 from datetime import datetime, timedelta
 from core.storage import StorageManager
@@ -21,7 +21,7 @@ class FormsManager:
     """
 
     def __init__(self, storage: StorageManager):
-        self.fiches: List[Form] = []
+        self.fiches: List[FlashCard] = []
         self.decks: List[Deck] = []
         self._next_id = 1
         self.__next_deck_id = 1
@@ -50,7 +50,7 @@ class FormsManager:
         question: str,
         reponse: Union[str, List[str]],
         tags: Optional[List[str]] = None
-    ) -> Form:
+    ) -> FlashCard:
         """
         Create a card in the Question/response format.
         
@@ -69,7 +69,7 @@ class FormsManager:
         - The returned form is added to the list of forms (self.fiches)
         - The returned form is assigned an id that is incremented by one from the id of the previously added form
         """
-        fiche = Form(
+        fiche = FlashCard(
             id=self._next_id,
             question=question,
             reponses=[reponse] if isinstance(reponse, str) else reponse,  
@@ -94,7 +94,7 @@ class FormsManager:
                 return True
         return False
 
-    def modify_form(self, fiche_modifiee: Form) -> bool:
+    def modify_form(self, fiche_modifiee: FlashCard) -> bool:
         """Modifie une fiche en mémoire ET dans la DB."""
         for i, fiche in enumerate(self.fiches):
             if fiche.id == fiche_modifiee.id:
@@ -105,7 +105,7 @@ class FormsManager:
         return False
 
 
-    def get_form(self, fiche_id: int) -> Optional[Form]:
+    def get_form(self, fiche_id: int) -> Optional[FlashCard]:
         for fiche in self.fiches:
             if fiche.id == fiche_id:
                 return fiche
@@ -157,7 +157,7 @@ class FormsManager:
 
 
 
-    def rechercher(self, mot_clef: str) -> List[Form]:
+    def rechercher(self, mot_clef: str) -> List[FlashCard]:
         mot_clef = mot_clef.lower()
         return [
             f for f in self.fiches
@@ -168,7 +168,7 @@ class FormsManager:
     # Révision
     # ----------------------------------------------------------
 
-    def fiches_a_reviser(self) -> List[Form]:
+    def fiches_a_reviser(self) -> List[FlashCard]:
         maintenant = datetime.now()
         return [
             fiche for fiche in self.fiches
@@ -179,7 +179,7 @@ class FormsManager:
     # Import / export
     # ----------------------------------------------------------
 
-    def charger_fiches(self, fiches: List[Form]):
+    def charger_fiches(self, fiches: List[FlashCard]):
         self.fiches = fiches
         self._next_id = max((f.id for f in fiches), default=0) + 1
 
@@ -187,7 +187,7 @@ class FormsManager:
         self.decks = decks
         self.next_deck_id = max((d.id for d in decks), default=0) + 1
 
-    def toutes_les_fiches(self) -> List[Form]:
+    def toutes_les_fiches(self) -> List[FlashCard]:
         return self.fiches
     
     def tous_les_decks(self) -> List[Deck]:
@@ -222,7 +222,7 @@ class FormsManager:
                 return True
         raise DeckNotFoundError(f"Deck with id {deck_id} not found")
     
-    def get_fiches_by_deck_id(self, deck_id: int) -> List[Form]:
+    def get_fiches_by_deck_id(self, deck_id: int) -> List[FlashCard]:
         """Récupère les Fiche associées à un deck donné."""
         deck = next((d for d in self.decks if d.id == deck_id), None)
         if not deck:
@@ -231,11 +231,3 @@ class FormsManager:
         fiches_du_deck = [f for f in self.fiches if f.id in deck.fiche_ids]
         
         return fiches_du_deck
-
-"""
-class SpacesRepetitionEngine:
-
-class StatsManager
-
-class MotivationEngine
-"""

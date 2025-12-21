@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from core.models import Form 
+from core.models import FlashCard
 from core.storage import StorageManager
 from core.formManager import FormsManager 
 
@@ -31,7 +31,7 @@ class TestFormsManagerEdward(unittest.TestCase):
         fiche = self.forms_manager.create_form(question, reponse, tags)
 
         # Assert : vérifie le type et le contenu de la fiche
-        self.assertIsInstance(fiche, Form)
+        self.assertIsInstance(fiche, FlashCard)
         self.assertEqual(fiche.id, 42)  # id mis à jour avec celui renvoyé par la DB
         self.assertEqual(fiche.question, question)
         self.assertEqual(fiche.reponses, [reponse])
@@ -45,7 +45,7 @@ class TestFormsManagerEdward(unittest.TestCase):
 
     def test_delete_form_removes_form_in_memory_and_db(self):
         # Arrange : on prépare une fiche déjà présente
-        fiche = Form(
+        fiche = FlashCard(
             id=10,
             question="Question test",
             reponses=["Réponse"],
