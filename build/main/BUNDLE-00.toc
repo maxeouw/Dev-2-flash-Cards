@@ -1,0 +1,1 @@
+([('main', '/Users/edwardgay/Dev-2-flash-Cards/dist/main', 'EXECUTABLE')],)
